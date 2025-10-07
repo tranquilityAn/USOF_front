@@ -21,9 +21,10 @@ const countReactions = (likesArray) => {
 
 export const fetchCommentsByPost = createAsyncThunk(
     'comments/fetchByPost',
-    async (postId, { rejectWithValue }) => {
+    async (postId, { rejectWithValue, getState }) => {
         try {
             const list = await fetchCommentsByPostRequest(postId); // Array<Comment>
+            const me = getState()?.auth?.user;
 
             const enriched = await Promise.all((list || []).map(async (c) => {
                 // counters
@@ -32,6 +33,10 @@ export const fetchCommentsByPost = createAsyncThunk(
                         const likes = await fetchCommentReactionsRequest(c.id); // [{type,userId}]
                         const { likes: L, dislikes: D } = countReactions(likes);
                         c.likesCount = L; c.dislikesCount = D;
+                        if (me?.id) {
+                            const mine = likes.find(r => r.userId === me.id);
+                            c.__myReaction = mine?.type ?? null;
+                        }
                     } catch {
                         c.likesCount = c.likesCount ?? 0;
                         c.dislikesCount = c.dislikesCount ?? 0;
@@ -97,7 +102,7 @@ export const removeCommentReaction = createAsyncThunk('comments/removeReact', as
 
 const commentsSlice = createSlice({
     name: 'comments',
-    initialState: { byPost: {}, loading: false, error: null },
+    initialState: { byPost: {}, loading: false, error: null, myReactionByComment: {} },
     reducers: {
         clearPostComments(state, { payload: postId }) { delete state.byPost[postId]; },
     },
@@ -106,6 +111,12 @@ const commentsSlice = createSlice({
         b.addCase(fetchCommentsByPost.fulfilled, (s, { payload }) => {
             s.loading = false;
             s.byPost[payload.postId] = payload.items;
+            for (const c of payload.items) {
+                if (c.__myReaction !== undefined) {
+                    s.myReactionByComment[c.id] = c.__myReaction; // 'like' | 'dislike' | null
+                    delete c.__myReaction;
+                }
+            }
         });
         b.addCase(fetchCommentsByPost.rejected, (s, a) => { s.loading = false; s.error = a.payload || 'Error'; });
 
@@ -134,8 +145,43 @@ const commentsSlice = createSlice({
                 if (c) { c.likesCount = payload.likes; c.dislikesCount = payload.dislikes; }
             }
         });
+        b.addCase(toggleCommentReaction.fulfilled, (s, { payload }) => {
+            const { commentId, next } = payload;
+            const prev = s.myReactionByComment[commentId] ?? null;
+
+            for (const postId in s.byPost) {
+                const c = s.byPost[postId].find(x => x.id === commentId);
+                if (!c) continue;
+                if (prev === 'like') c.likesCount = Math.max(0, (c.likesCount || 0) - 1);
+                if (prev === 'dislike') c.dislikesCount = Math.max(0, (c.dislikesCount || 0) - 1);
+                if (next === 'like') c.likesCount = (c.likesCount || 0) + 1;
+                if (next === 'dislike') c.dislikesCount = (c.dislikesCount || 0) + 1;
+                break;
+            }
+            s.myReactionByComment[commentId] = next; // 'like' | 'dislike' | null
+        });
     },
 });
+
+export const toggleCommentReaction = createAsyncThunk(
+    'comments/toggleReaction',
+    async ({ commentId, type }, { getState, rejectWithValue }) => {
+        try {
+            const state = getState();
+            const my = state.comments.myReactionByComment?.[commentId] ?? null;
+            if (my === type) {
+                await removeCommentReactionRequest(commentId);
+                return { commentId, next: null };
+            } else {
+                await reactToCommentRequest(commentId, type);
+                return { commentId, next: type }; // 'like' | 'dislike'
+            }
+        } catch (err) {
+            return rejectWithValue(err?.response?.data?.message || 'Failed to toggle reaction');
+        }
+    }
+);
+
 
 export const { clearPostComments } = commentsSlice.actions;
 export default commentsSlice.reducer;

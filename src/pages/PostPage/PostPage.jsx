@@ -6,8 +6,7 @@ import {
     fetchCommentsByPost,
     addComment,
     deleteComment,
-    reactToComment,
-    removeCommentReaction,
+    toggleCommentReaction,
 } from '../../features/comments/commentsSlice';
 import { AiOutlineLike, AiFillLike, AiOutlineDislike, AiFillDislike } from 'react-icons/ai';
 
@@ -19,7 +18,7 @@ export default function PostPage() {
 
     const { current: post, currentLoading, currentError, myReactionByPost } = useSelector(s => s.posts);
     const myReaction = myReactionByPost?.[postId] ?? null;
-    const { byPost, loading: commentsLoading } = useSelector(s => s.comments);
+    const { byPost, loading: commentsLoading, myReactionByComment } = useSelector(s => s.comments);
     const comments = byPost[postId] || [];
     const auth = useSelector(s => s.auth);
     const isLoggedIn = Boolean(auth?.user);
@@ -136,27 +135,34 @@ export default function PostPage() {
                                 <div style={{ whiteSpace: 'pre-wrap' }}>{c.content}</div>
 
                                 <div style={{ display: 'flex', gap: 10, marginTop: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                                    <button
-                                        onClick={() => { if (requireAuth()) return; dispatch(reactToComment({ commentId: c.id, type: 'like' })); }}
-                                        title="Like"
-                                    >
-                                        👍 <span style={{ marginLeft: 6 }}>{c.likesCount ?? 0}</span>
-                                    </button>
-
-                                    <button
-                                        onClick={() => { if (requireAuth()) return; dispatch(reactToComment({ commentId: c.id, type: 'dislike' })); }}
-                                        title="Dislike"
-                                    >
-                                        👎 <span style={{ marginLeft: 6 }}>{c.dislikesCount ?? 0}</span>
-                                    </button>
-
-                                    <button
-                                        onClick={() => { if (requireAuth()) return; dispatch(removeCommentReaction(c.id)); }}
-                                        title="Remove my reaction"
-                                    >
-                                        ↩︎
-                                    </button>
-
+                                    {(() => {
+                                        const my = myReactionByComment?.[c.id] ?? null;
+                                        const likeActive = my === 'like';
+                                        const dislikeActive = my === 'dislike';
+                                        const btnStyle = { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 8, border: '1px solid #3a3a3a' };
+                                        return (
+                                            <>
+                                                <button
+                                                    aria-pressed={likeActive}
+                                                    onClick={() => { if (requireAuth()) return; dispatch(toggleCommentReaction({ commentId: c.id, type: 'like' })); }}
+                                                    title={likeActive ? 'Remove like' : 'Like'}
+                                                    style={btnStyle}
+                                                >
+                                                    {likeActive ? <AiFillLike /> : <AiOutlineLike />}
+                                                    {c.likesCount ?? 0}
+                                                </button>
+                                                <button
+                                                    aria-pressed={dislikeActive}
+                                                    onClick={() => { if (requireAuth()) return; dispatch(toggleCommentReaction({ commentId: c.id, type: 'dislike' })); }}
+                                                    title={dislikeActive ? 'Remove dislike' : 'Dislike'}
+                                                    style={btnStyle}
+                                                >
+                                                    {dislikeActive ? <AiFillDislike /> : <AiOutlineDislike />}
+                                                    {c.dislikesCount ?? 0}
+                                                </button>
+                                            </>
+                                        );
+                                    })()}
                                     {canDelete && (
                                         <button onClick={() => dispatch(deleteComment(c.id))} style={{ marginLeft: 'auto' }}>
                                             Delete
