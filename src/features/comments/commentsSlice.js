@@ -7,6 +7,7 @@ import {
     reactToCommentRequest,
     removeCommentReactionRequest,
 } from './commentsApi';
+import { fetchUserByIdRequest } from '../authors/authorsApi';
 
 // хелпер: порахувати {likes, dislikes} з масиву реакцій
 const countReactions = (likesArray) => {
@@ -18,36 +19,48 @@ const countReactions = (likesArray) => {
     return { likes, dislikes };
 };
 
-// завантажити коментарі і добрати лічильники
-export const fetchCommentsByPost = createAsyncThunk('comments/fetchByPost', async (postId, { rejectWithValue }) => {
-    try {
-        const items = await fetchCommentsByPostRequest(postId);
-        // обмежимо паралельність до 10 (простий батч)
-        const batches = [];
-        const B = 10;
-        for (let i = 0; i < items.length; i += B) batches.push(items.slice(i, i + B));
-        for (const batch of batches) {
-            await Promise.all(batch.map(async (c) => {
-                try {
-                    const arr = await fetchCommentReactionsRequest(c.id);
-                    const { likes, dislikes } = countReactions(arr);
-                    c.likesCount = likes;
-                    c.dislikesCount = dislikes;
-                } catch {
-                    c.likesCount = 0; c.dislikesCount = 0;
+export const fetchCommentsByPost = createAsyncThunk(
+    'comments/fetchByPost',
+    async (postId, { rejectWithValue }) => {
+        try {
+            const list = await fetchCommentsByPostRequest(postId); // Array<Comment>
+
+            const enriched = await Promise.all((list || []).map(async (c) => {
+                // counters
+                if (c.likesCount == null || c.dislikesCount == null) {
+                    try {
+                        const likes = await fetchCommentReactionsRequest(c.id); // [{type,userId}]
+                        const { likes: L, dislikes: D } = countReactions(likes);
+                        c.likesCount = L; c.dislikesCount = D;
+                    } catch {
+                        c.likesCount = c.likesCount ?? 0;
+                        c.dislikesCount = c.dislikesCount ?? 0;
+                    }
                 }
+
+                // comment author
+                if (!c.author && (c.authorId || c.userId)) {
+                    const uid = c.authorId ?? c.userId;
+                    try {
+                        c.author = await fetchUserByIdRequest(uid);
+                    } catch {
+                        c.author = { id: uid, login: 'anon' };
+                    }
+                }
+
+                return c;
             }));
+
+            return { postId, items: enriched };
+        } catch (err) {
+            return rejectWithValue(err?.response?.data?.message || 'Failed to load comments');
         }
-        return { postId, items };
-    } catch (err) {
-        return rejectWithValue(err?.response?.data?.message || 'Failed to load comments');
     }
-});
+);
 
 export const addComment = createAsyncThunk('comments/add', async ({ postId, content }, { rejectWithValue }) => {
     try {
         const created = await addCommentRequest(postId, { content });
-        // після створення — 0/0 (або можна одразу підкачати)
         created.likesCount = 0; created.dislikesCount = 0;
         return { postId, comment: created };
     } catch (err) {
@@ -60,7 +73,6 @@ export const deleteComment = createAsyncThunk('comments/delete', async (commentI
     catch (err) { return rejectWithValue(err?.response?.data?.message || 'Failed to delete'); }
 });
 
-// поставити реакцію (like|dislike) на коментар і оновити лічильники
 export const reactToComment = createAsyncThunk('comments/react', async ({ commentId, type }, { rejectWithValue }) => {
     try {
         await reactToCommentRequest(commentId, type);
@@ -72,7 +84,6 @@ export const reactToComment = createAsyncThunk('comments/react', async ({ commen
     }
 });
 
-// прибрати реакцію з комента
 export const removeCommentReaction = createAsyncThunk('comments/removeReact', async (commentId, { rejectWithValue }) => {
     try {
         await removeCommentReactionRequest(commentId);
