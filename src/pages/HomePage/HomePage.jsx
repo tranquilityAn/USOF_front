@@ -11,6 +11,7 @@ import { useQuerySync } from '../../hooks/useQuerySync';
 export default function HomePage() {
     const dispatch = useDispatch();
     const posts = useSelector(s => s.posts);
+    const filters = useSelector(s => s.posts.filters);
     const cats = useSelector(s => s.categories);
     const auth = useSelector(s => s.auth);
     const isAdmin = auth?.user?.role === 'admin';
@@ -30,7 +31,7 @@ export default function HomePage() {
     });
 
     // URL -> застосовані фільтри в Redux + синхронізуємо чернетку
-    useQuerySync(posts, (parsed) => {
+    useQuerySync(posts.filters, (parsed) => {
         dispatch(setFilters(parsed));
         setDraft(d => ({ ...d, ...parsed }));
     });
@@ -40,30 +41,19 @@ export default function HomePage() {
 
     // Робимо запит лише коли ЗАСТОСОВАНІ фільтри змінюються
     useEffect(() => {
+        const f = filters;
         const params = {
-            page: posts.page,
-            limit: posts.limit,
-            sort: posts.sort,
-            order: posts.order,
+            page: f.page,
+            limit: f.limit,
+            sort: f.sort,
+            order: f.order,
         };
-
-        if (posts.categories?.length) params.categories = posts.categories.join(',');
-        if (posts.dateFrom) params.dateFrom = posts.dateFrom;
-        if (posts.dateTo) params.dateTo = posts.dateTo;
-
-        // статус надсилаємо лише якщо можна фільтрувати за статусом:
-        // - адмін на загальній стрічці
-        // - або (на сторінці "мої пости", яку ти зробиш окремо) — звичайний юзер для своїх
-        if (isAdmin && posts.status) params.status = posts.status;
-
+        if (f.categories?.length) params.categories = f.categories.join(',');
+        if (f.dateFrom) params.dateFrom = f.dateFrom;
+        if (f.dateTo) params.dateTo = f.dateTo;
+        if (isAdmin && f.status) params.status = f.status;
         dispatch(fetchPosts(params));
-    }, [
-        dispatch,
-        posts.page, posts.limit, posts.sort, posts.order,
-        posts.categories, posts.dateFrom, posts.dateTo, posts.status,
-        isAdmin
-    ]);
-
+    }, [dispatch, filters, isAdmin]);
     useEffect(() => {
         if (!posts.items?.length) return;
 
@@ -123,8 +113,8 @@ export default function HomePage() {
 
             <div style={{ marginTop: 12 }}>
                 <Pagination
-                    page={posts.page}
-                    limit={posts.limit}
+                    page={posts.filters.page}
+                    limit={posts.filters.limit}
                     total={posts.total}
                     onChange={(p) => dispatch(setPage(p))}
                 />
