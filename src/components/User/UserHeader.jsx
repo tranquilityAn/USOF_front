@@ -1,15 +1,18 @@
+import { getAvatarUrl } from '../../utils/getAvatarUrl';
+
 export default function UserHeader({ user }) {
     if (!user) return null;
     const { login, fullName, profilePicture, role } = user;
 
-
+    const avatarSrc = getAvatarUrl(profilePicture) || 'https://via.placeholder.com/96?text=User';
     return (
         <div className="card card-lg" style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
             <img
-                src={profilePicture || 'https://via.placeholder.com/96?text=User'}
+                src={avatarSrc}
                 alt=""
                 className="avatar"
                 loading="lazy"
+                onError={(e) => { e.currentTarget.src = 'https://via.placeholder.com/96?text=User'; }}
             />
             <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
