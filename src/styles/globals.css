@@ -1,0 +1,137 @@
+:root {
+    --radius-lg: 16px;
+}
+
+
+html,
+body,
+#root {
+    height: 100%;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+
+/* Container */
+.container {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+
+/* Cards & Panels */
+.card {
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+}
+
+.card-lg {
+    padding: 20px;
+    border-radius: var(--radius-lg);
+}
+
+
+/* Grid helpers */
+.grid-2 {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 24px;
+}
+
+
+/* Text helpers */
+.text-dim {
+    color: var(--muted);
+}
+
+.h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 8px;
+}
+
+.small {
+    font-size: 12px;
+}
+
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    cursor: pointer;
+}
+
+.btn:hover {
+    border-color: #2f3340;
+}
+
+.btn-ghost {
+    background: transparent;
+}
+
+.btn-primary {
+    background: linear-gradient(180deg, var(--brand), var(--brand-2));
+    border: 1px solid transparent;
+    font-weight: 600;
+}
+
+.btn:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+
+/* Avatar */
+.avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #1a1d24;
+}
+
+
+/* Badge */
+.badge {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #1f2330;
+    border: 1px solid var(--border);
+}
+
+.badge-admin {
+    background: #291d5a;
+    border-color: #4e39a8;
+}
+
+
+/* Divider */
+.hr {
+    height: 1px;
+    background: var(--border);
+    border: 0;
+    margin: 12px 0;
+}
