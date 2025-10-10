@@ -69,7 +69,7 @@ export default function PostCard({ post }) {
                     gap: 12,
                     alignItems: 'center',
                     marginTop: 4,
-                    fontSize: 13,
+                    fontSize: 16,
                     opacity: 0.9,
                 }}
             >

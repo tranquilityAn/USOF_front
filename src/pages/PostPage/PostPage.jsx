@@ -112,7 +112,7 @@ export default function PostPage() {
                         style={{ width: '100%', background: '#1e1e1e', color: '#f5f5f5', border: '1px solid #333', borderRadius: 8, padding: 8 }}
                     />
                     <div style={{ marginTop: 8 }}>
-                        <button type="submit">Send</button>
+                        <button className='btn btn--primary' type="submit">Send</button>
                     </div>
                 </form>
 

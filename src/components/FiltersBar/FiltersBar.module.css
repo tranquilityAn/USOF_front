@@ -5,6 +5,7 @@
     border: 1px solid #2c2c2c;
     border-radius: 8px;
     color: #f5f5f5;
+    margin-right: 10px;
 }
 
 .multiSelect {
@@ -16,6 +17,8 @@
     color: #f5f5f5;
     cursor: pointer;
     position: relative;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 .placeholder {
@@ -86,3 +89,6 @@
     color: #888;
     padding: 8px 4px;
 }
+
+.field { display:inline-flex; align-items:center; gap:.5rem; }
+.prefix { opacity:.7; }

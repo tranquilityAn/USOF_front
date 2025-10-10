@@ -76,20 +76,25 @@ export default function FiltersBar({
                     <option value="asc">↑ Ascending</option>
                 </select>
 
-                <input
-                    className={styles.input}
-                    type="date"
-                    value={dateFrom || ''}
-                    onChange={(e) => patch({ dateFrom: e.target.value })}
-                    placeholder="From date"
-                />
-                <input
-                    className={styles.input}
-                    type="date"
-                    value={dateTo || ''}
-                    onChange={(e) => patch({ dateTo: e.target.value })}
-                    placeholder="To date"
-                />
+                <label className={styles.field}>
+                    <span className={styles.prefix}>From</span>
+                    <input
+                        className={styles.input}
+                        type="date"
+                        value={dateFrom || ''}
+                        onChange={(e) => patch({ dateFrom: e.target.value })}
+                    />
+                </label>
+
+                <label className={styles.field}>
+                    <span className={styles.prefix}>To</span>
+                    <input
+                        className={styles.input}
+                        type="date"
+                        value={dateTo || ''}
+                        onChange={(e) => patch({ dateTo: e.target.value })}
+                    />
+                </label>
 
                 <select
                     className={styles.select}
