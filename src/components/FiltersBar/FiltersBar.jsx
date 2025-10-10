@@ -104,7 +104,6 @@ export default function FiltersBar({
                     <select
                         className={styles.select}
                         value={status || 'all'}
-                        //onChange={(e) => patch({ status: e.target.value === 'all' ? undefined : e.target.value })}
                         onChange={(e) => patch({ status: e.target.value })}
                     >
                         <option value="all">All statuses</option>
@@ -174,7 +173,7 @@ export default function FiltersBar({
             </div>
 
             <div className={styles.row}>
-                <button className={styles.button} onClick={onApply}>Apply</button>
+                <button className="btn btn--primary" onClick={onApply}>Apply</button>
             </div>
         </div>
     );

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { AiTwotoneLike, AiTwotoneDislike, AiOutlineComment } from 'react-icons/ai';
 
 /**
  * Post card for the list on the homepage.
@@ -72,19 +73,14 @@ export default function PostCard({ post }) {
                     opacity: 0.9,
                 }}
             >
-                <span>👍 {post.likesCount ?? 0}</span>
-                <span>👎 {post.dislikesCount ?? 0}</span>
-                <span>💬 {post.commentsCount ?? 0}</span>
+                <span><AiTwotoneLike style={{ verticalAlign: 'middle' }} /> {post.likesCount ?? 0}</span>
+                <span><AiTwotoneDislike style={{ verticalAlign: 'middle' }} /> {post.dislikesCount ?? 0}</span>
+                <span><AiOutlineComment style={{ verticalAlign: 'middle' }} /> {post.commentsCount ?? 0}</span>
 
                 <Link
                     to={`/post/${post.id}`}
-                    style={{
-                        marginLeft: 'auto',
-                        background: '#2a2a2a',
-                        border: '1px solid #3a3a3a',
-                        padding: '6px 10px',
-                        borderRadius: 8,
-                    }}
+                    className='btn btn--ghost'
+                    style={{ marginLeft: 'auto' }}
                 >
                     Read
                 </Link>

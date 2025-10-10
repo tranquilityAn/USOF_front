@@ -4,7 +4,7 @@ export default function MainLayout({ children }) {
     return (
         <>
             <Header />
-            <main style={{ maxWidth: 960, margin: '0 auto', padding: 16 }}>
+            <main className="container">
                 {children}
             </main>
         </>

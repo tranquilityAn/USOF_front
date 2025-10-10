@@ -38,14 +38,13 @@ export default function Header() {
                                     )}
                                     <button
                                         onClick={() => { dispatch(logout()); navigate('/'); }}
-                                        className={styles.button}
+                                        className="btn btn--ghost"
                                     >
                                         Log out
                                     </button>
                                 </>
                             ) : (
-                                //<Link to="/login" className={styles.userLink}>Sing in</Link>
-                                <div className={styles.userLinks}>
+                                <div className={styles.Links}>
                                     <Link to="/login" className={styles.userLink}>Sign in</Link>
                                     <Link to="/register" className={styles.userLink}>Sign up</Link>
                                 </div>

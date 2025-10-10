@@ -1,0 +1,34 @@
+:root {
+  /* Colors (Dark) */
+  --bg: #0b0f14;
+  --surface: #10151b;
+  --card: #111820;
+  --border: #263241;
+  --text: #e6edf3;
+  --muted: #9aa4b2;
+
+  --primary: #4c81fc;
+  --primary-hover: #3667fc;
+  --danger: #ff6b6b;
+  --success: #5ad19a;
+  --warning: #ffb454;
+
+  /* Shadow*/
+  --shadow-color: rgba(0,0,0,.5);
+
+  /* typography */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  --h1: 28px; --h2: 22px; --h3: 18px; --text-base: 14px; --text-sm: 12px;
+
+  /* Spaces */
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-6: 24px;
+  --radius-sm: 8px; --radius: 12px; --radius-lg: 16px;
+  --border-w: 1px;
+
+  --control-h: 36px; --control-px: 12px;
+
+  --transition: 160ms ease;
+}
+
+/* .theme-dark/.theme-light future */
+html.theme-dark { color-scheme: dark; }
