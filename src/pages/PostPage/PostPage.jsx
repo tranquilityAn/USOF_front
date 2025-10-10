@@ -8,6 +8,7 @@ import {
     deleteComment,
     toggleCommentReaction,
 } from '../../features/comments/commentsSlice';
+import CategoryChips from '../../components/CategoryChips/CategoryChips';
 import { AiOutlineLike, AiFillLike, AiOutlineDislike, AiFillDislike } from 'react-icons/ai';
 
 export default function PostPage() {
@@ -65,6 +66,7 @@ export default function PostPage() {
     return (
         <div style={{ maxWidth: 860, margin: '24px auto', padding: 16 }}>
             <h1 style={{ marginBottom: 4 }}>{post.title}</h1>
+            <CategoryChips categories={post.categories} />
             <div style={{ opacity: .8, marginBottom: 16 }}>
                 by <strong>{authorLabel}</strong>
             </div>

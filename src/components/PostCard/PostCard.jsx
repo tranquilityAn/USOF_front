@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import CategoryChips from '../CategoryChips/CategoryChips';
 import { AiTwotoneLike, AiTwotoneDislike, AiOutlineComment } from 'react-icons/ai';
 
 /**
@@ -42,7 +43,8 @@ export default function PostCard({ post }) {
                     {title || 'Без назви'}
                 </Link>
             </h3>
-
+            {/* Теги категорій */}
+            <CategoryChips categories={categories} size="sm" />
             <div style={{ fontSize: 12, opacity: 0.85 }}>
                 @{author?.login || 'anon'} • {date.toLocaleString()}
                 {categories.length > 0 && (

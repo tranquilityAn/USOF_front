@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { fetchPostsRequest, fetchPostByIdRequest, reactToPostRequest, removePostReactionRequest, fetchPostReactionsRequest, fetchCommentsByPostRequest } from './postsApi';
+import { fetchPostsRequest, fetchPostByIdRequest, reactToPostRequest, removePostReactionRequest, fetchPostReactionsRequest, fetchCommentsByPostRequest, fetchPostCategoriesRequest } from './postsApi';
 import { fetchUserByIdRequest } from '../authors/authorsApi';
 
 const countReactions = (arr = []) => {
@@ -44,6 +44,13 @@ export const fetchPosts = createAsyncThunk(
                     } catch {
                         p.author = { id: uid, login: 'anon' };
                     }
+                }
+
+
+                if (!Array.isArray(p.categories) || !p.categories.length) {
+                    try {
+                        p.categories = await fetchPostCategoriesRequest(p.id);
+                    } catch {}
                 }
 
                 return p;

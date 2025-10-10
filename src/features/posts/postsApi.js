@@ -12,6 +12,11 @@ export const fetchPostByIdRequest = async (id) => {
     return data; // Post
 };
 
+export const fetchPostCategoriesRequest = async (id) => {
+    const { data } = await api.get(`/posts/${id}/categories`);
+    return data; // Category[]
+};
+
 // масив усіх лайків/дизлайків поста (для знання власної реакції, якщо треба)
 export const fetchPostReactionsRequest = async (id) => {
     const { data } = await api.get(`/posts/${id}/like`);
