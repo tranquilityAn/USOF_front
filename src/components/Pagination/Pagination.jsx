@@ -5,9 +5,9 @@ export default function Pagination({ page, limit, total, onChange }) {
 
     return (
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center' }}>
-            <button disabled={!canPrev} onClick={() => onChange(page - 1)}>‹ Previous</button>
+            <button className="btn btn--ghost" disabled={!canPrev} onClick={() => onChange(page - 1)}>‹ Previous</button>
             <span style={{ color: '#f5f5f5' }}>{page} / {pages}</span>
-            <button disabled={!canNext} onClick={() => onChange(page + 1)}>Next ›</button>
+            <button className="btn btn--ghost" disabled={!canNext} onClick={() => onChange(page + 1)}>Next ›</button>
         </div>
     );
 }
