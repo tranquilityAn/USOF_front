@@ -66,12 +66,13 @@ export default function PostPage() {
     return (
         <div style={{ maxWidth: 860, margin: '24px auto', padding: 16 }}>
             <h1 style={{ marginBottom: 4 }}>{post.title}</h1>
-            <CategoryChips categories={post.categories} />
-            <div style={{ opacity: .8, marginBottom: 16 }}>
+            <div style={{ opacity: .8, marginBottom: 8, marginTop: 8}}>
                 by <strong>{authorLabel}</strong>
             </div>
+            <CategoryChips categories={post.categories} />
+            
 
-            <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{post.content}</div>
+            <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6, marginTop: 8}}>{post.content}</div>
 
             {/* Post reactions panel */}
             <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginTop: 16 }}>

@@ -47,9 +47,6 @@ export default function PostCard({ post }) {
             <CategoryChips categories={categories} size="sm" />
             <div style={{ fontSize: 12, opacity: 0.85 }}>
                 @{author?.login || 'anon'} • {date.toLocaleString()}
-                {categories.length > 0 && (
-                    <> • Categories: {categories.map((c) => c?.name ?? c).join(', ')}</>
-                )}
             </div>
 
             {coverUrl && (

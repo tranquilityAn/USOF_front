@@ -50,7 +50,7 @@ export const fetchPosts = createAsyncThunk(
                 if (!Array.isArray(p.categories) || !p.categories.length) {
                     try {
                         p.categories = await fetchPostCategoriesRequest(p.id);
-                    } catch {}
+                    } catch { }
                 }
 
                 return p;
@@ -68,6 +68,9 @@ export const fetchPostById = createAsyncThunk(
     async (id, { rejectWithValue, getState }) => {
         try {
             const post = await fetchPostByIdRequest(id);
+            try {
+                post.categories = await fetchPostCategoriesRequest(id);
+            } catch (_) { }
             const state = getState();
             const me = state.auth?.user;
 
