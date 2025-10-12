@@ -1,13 +1,34 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import CategoryChips from '../CategoryChips/CategoryChips';
 import { AiTwotoneLike, AiTwotoneDislike, AiOutlineComment } from 'react-icons/ai';
+import { AiOutlineHeart, AiFillHeart } from 'react-icons/ai';
+import { useDispatch, useSelector } from 'react-redux';
+import { toggleFavorite, selectIsFavorite, selectFavPending } from '../../features/favorites/favoritesSlice';
 
 /**
  * Post card for the list on the homepage.
  * Makes the title clickable: leads to /post/:id
  */
 export default function PostCard({ post }) {
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    //const { token } = useSelector(s => s.auth);
+    const { token } = useSelector(s => s.auth);
+    const isFav = useSelector(s => selectIsFavorite(s, post?.id));
+    const isPending = useSelector(s => selectFavPending(s, post?.id));
+
     if (!post) return null;
+
+    //const isFav = favIds?.has?.(post.id);
+
+    const onToggleFav = (e) => {
+        e.preventDefault();
+        if (!token || isPending) {
+            navigate('/login');
+            return;
+        }
+        dispatch(toggleFavorite({ postId: post.id, isFav }));
+    };
 
     const {
         id,
@@ -75,6 +96,19 @@ export default function PostCard({ post }) {
                 <span><AiTwotoneLike style={{ verticalAlign: 'middle' }} /> {post.likesCount ?? 0}</span>
                 <span><AiTwotoneDislike style={{ verticalAlign: 'middle' }} /> {post.dislikesCount ?? 0}</span>
                 <span><AiOutlineComment style={{ verticalAlign: 'middle' }} /> {post.commentsCount ?? 0}</span>
+
+                {/* Favorite toggle */}
+                <button
+                    onClick={onToggleFav}
+                    aria-pressed={!!isFav}
+                    title={isFav ? 'Remove from favorites' : 'Add to favorites'}
+                    className="btn btn--ghost"
+                    disabled={isPending}
+                    style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6, opacity: isPending ? 0.6 : 1, cursor: isPending ? 'not-allowed' : 'pointer' }}
+                >
+                    {isFav ? <AiFillHeart /> : <AiOutlineHeart />}
+                    {isFav ? 'In favorites' : 'Add to favorites'}
+                </button>
 
                 <Link
                     to={`/post/${post.id}`}

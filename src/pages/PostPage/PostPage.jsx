@@ -9,7 +9,8 @@ import {
     toggleCommentReaction,
 } from '../../features/comments/commentsSlice';
 import CategoryChips from '../../components/CategoryChips/CategoryChips';
-import { AiOutlineLike, AiFillLike, AiOutlineDislike, AiFillDislike } from 'react-icons/ai';
+import { AiOutlineLike, AiFillLike, AiOutlineDislike, AiFillDislike, AiOutlineHeart, AiFillHeart } from 'react-icons/ai';
+import { toggleFavorite, selectIsFavorite, selectFavPending } from '../../features/favorites/favoritesSlice';
 
 export default function PostPage() {
     const { id } = useParams();
@@ -23,6 +24,13 @@ export default function PostPage() {
     const comments = byPost[postId] || [];
     const auth = useSelector(s => s.auth);
     const isLoggedIn = Boolean(auth?.user);
+    const isFav = useSelector(s => selectIsFavorite(s, postId));
+    const isFavPending = useSelector(s => selectFavPending(s, postId));
+    const onToggleFav = () => {
+        if (requireAuth()) return;
+        if (isFavPending) return; // захист від дабл-кліків/гонок
+        dispatch(toggleFavorite({ postId, isFav })); // всередині вирішує: DELETE чи POST
+    };
 
     useEffect(() => {
         if (!Number.isFinite(postId)) return;
@@ -66,13 +74,13 @@ export default function PostPage() {
     return (
         <div style={{ maxWidth: 860, margin: '24px auto', padding: 16 }}>
             <h1 style={{ marginBottom: 4 }}>{post.title}</h1>
-            <div style={{ opacity: .8, marginBottom: 8, marginTop: 8}}>
+            <div style={{ opacity: .8, marginBottom: 8, marginTop: 8 }}>
                 by <strong>{authorLabel}</strong>
             </div>
             <CategoryChips categories={post.categories} />
-            
 
-            <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6, marginTop: 8}}>{post.content}</div>
+
+            <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6, marginTop: 8 }}>{post.content}</div>
 
             {/* Post reactions panel */}
             <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginTop: 16 }}>
@@ -99,6 +107,23 @@ export default function PostPage() {
                 <div style={{ marginLeft: 'auto', opacity: .8 }}>
                     {post.commentsCount ?? comments.length ?? 0} comments
                 </div>
+
+                <button
+                    onClick={onToggleFav}
+                    aria-pressed={!!isFav}
+                    title={isFav ? 'Remove from favorites' : 'Add to favorites'}
+                    className="btn btn--ghost"
+                    disabled={isFavPending}
+                    style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        opacity: isFavPending ? 0.6 : 1,
+                        cursor: isFavPending ? 'not-allowed' : 'pointer'
+                    }}
+                >
+                    {isFav ? <AiFillHeart /> : <AiOutlineHeart />} {isFav ? 'In favorites' : 'Add to favorites'}
+                </button>
             </div>
 
             <hr style={{ margin: '16px 0' }} />
