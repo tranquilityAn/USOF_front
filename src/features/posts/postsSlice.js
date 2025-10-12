@@ -1,5 +1,16 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { fetchPostsRequest, fetchPostByIdRequest, reactToPostRequest, removePostReactionRequest, fetchPostReactionsRequest, fetchCommentsByPostRequest, fetchPostCategoriesRequest, createPostRequest } from './postsApi';
+import {
+    fetchPostsRequest,
+    fetchPostByIdRequest,
+    reactToPostRequest,
+    removePostReactionRequest,
+    fetchPostReactionsRequest,
+    fetchCommentsByPostRequest,
+    fetchPostCategoriesRequest,
+    createPostRequest,
+    updatePostRequest,
+    deletePostRequest
+} from './postsApi';
 import { fetchUserByIdRequest } from '../authors/authorsApi';
 
 const countReactions = (arr = []) => {
@@ -137,6 +148,33 @@ export const createPost = createAsyncThunk(
     }
 );
 
+export const updatePost = createAsyncThunk(
+    'posts/update',
+    async ({ id, title, content, categories }, { rejectWithValue }) => {
+        try {
+            const updated = await updatePostRequest(id, { title, content, categories });
+            return updated;
+        } catch (err) {
+            const msg = err?.response?.data?.message || 'Failed to update post';
+            return rejectWithValue(msg);
+        }
+    }
+);
+
+export const deletePost = createAsyncThunk(
+    'posts/delete',
+    async (id, { rejectWithValue }) => {
+        try {
+            await deletePostRequest(id);
+            return id;
+        } catch (err) {
+            const msg = err?.response?.data?.message || 'Failed to delete post';
+            return rejectWithValue(msg);
+        }
+    }
+);
+
+
 const initialState = {
     items: [],
     page: 1,
@@ -151,6 +189,11 @@ const initialState = {
 
     myReactionByPost: {},
     authorsById: {},
+    updateLoading: false,
+    updateError: null,
+
+    deleteLoading: false,
+    deleteError: null,
 
     // filters for HomePage/FiltersBar
     filters: {
@@ -230,6 +273,36 @@ const postsSlice = createSlice({
             })
             .addCase(createPost.rejected, (s, a) => {
                 s.createLoading = false; s.createError = a.payload || a.error?.message || 'Failed';
+            })
+
+            // UPDATE
+            .addCase(updatePost.pending, (s) => { s.updateLoading = true; s.updateError = null; })
+            .addCase(updatePost.fulfilled, (s, a) => {
+                s.updateLoading = false;
+                s.updateError = null;
+                const p = a.payload;
+                // онови current
+                if (s.current?.id === p.id) s.current = p;
+                // онови в списку
+                const idx = s.items.findIndex(x => x.id === p.id);
+                if (idx !== -1) s.items[idx] = p;
+            })
+            .addCase(updatePost.rejected, (s, a) => {
+                s.updateLoading = false;
+                s.updateError = a.payload || a.error?.message || 'Failed';
+            })
+
+            // DELETE
+            .addCase(deletePost.pending, (s) => { s.deleteLoading = true; s.deleteError = null; })
+            .addCase(deletePost.fulfilled, (s, a) => {
+                s.deleteLoading = false; s.deleteError = null;
+                const id = a.payload;
+                s.items = s.items.filter(p => p.id !== id);
+                if (s.current?.id === id) s.current = null;
+            })
+            .addCase(deletePost.rejected, (s, a) => {
+                s.deleteLoading = false;
+                s.deleteError = a.payload || a.error?.message || 'Failed';
             });
     }
 });

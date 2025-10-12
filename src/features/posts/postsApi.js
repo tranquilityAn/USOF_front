@@ -42,6 +42,19 @@ export const removePostReactionRequest = async (id) => {
 
 // create post
 export const createPostRequest = async ({ title, content, categories }) => {
-const { data } = await api.post('/posts', { title, content, categories });
-return data; // Created Post
+    const { data } = await api.post('/posts', { title, content, categories });
+    return data; // Created Post
+};
+
+// update own post
+export const updatePostRequest = async (id, payload) => {
+    // payload: { title?, content?, categories? }
+    const { data } = await api.patch(`/posts/${id}`, payload);
+    return data; // Updated Post
+};
+
+// delete own post
+export const deletePostRequest = async (id) => {
+    const { data } = await api.delete(`/posts/${id}`);
+    return data; // 200 { description: 'Deleted' } або порожньо — не покладаємось
 };
