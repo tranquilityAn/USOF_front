@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fetchPostById, clearCurrent, togglePostReaction } from '../../features/posts/postsSlice';
@@ -26,6 +26,9 @@ export default function PostPage() {
     const isLoggedIn = Boolean(auth?.user);
     const isFav = useSelector(s => selectIsFavorite(s, postId));
     const isFavPending = useSelector(s => selectFavPending(s, postId));
+    const [commentDraft, setCommentDraft] = useState('');
+    const [commentUIOpen, setCommentUIOpen] = useState(false);
+    const commentRef = useRef(null);
     const onToggleFav = () => {
         if (requireAuth()) return;
         if (isFavPending) return; // захист від дабл-кліків/гонок
@@ -62,11 +65,13 @@ export default function PostPage() {
     const handleAddComment = (e) => {
         e.preventDefault();
         if (requireAuth()) return;
-        const form = new FormData(e.currentTarget);
-        const content = (form.get('content') || '').toString().trim();
+
+        const content = commentDraft.trim();
         if (!content) return;
         dispatch(addComment({ postId: post.id, content }));
-        e.currentTarget.reset();
+        setCommentDraft('');
+        setCommentUIOpen(false);
+        commentRef.current?.blur();
     };
 
     const authorLabel = post.author?.name || post.author?.login || `@user_${post.author?.id || 'anon'}`;
@@ -134,13 +139,58 @@ export default function PostPage() {
 
                 <form onSubmit={handleAddComment} style={{ marginBottom: 16 }}>
                     <textarea
+                        ref={commentRef}
                         name="content"
                         placeholder="Write a comment…"
                         rows={3}
-                        style={{ width: '100%', background: '#1e1e1e', color: '#f5f5f5', border: '1px solid #333', borderRadius: 8, padding: 8 }}
+                        value={commentDraft}
+                        onChange={(e) => setCommentDraft(e.target.value)}
+                        onFocus={() => setCommentUIOpen(true)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Escape') {
+                                setCommentDraft('');
+                                setCommentUIOpen(false);
+                                commentRef.current?.blur();
+                            }
+                        }}
+                        style={{
+                            width: '100%',
+                            background: '#1e1e1e',
+                            color: '#f5f5f5',
+                            border: '1px solid #333',
+                            borderRadius: 8,
+                            padding: 8
+                        }}
                     />
-                    <div style={{ marginTop: 8 }}>
-                        <button className='btn btn--primary' type="submit">Send</button>
+
+                    {/* Action panel */}
+                    <div
+                        style={{
+                            display: (commentUIOpen || commentDraft.length > 0) ? 'flex' : 'none',
+                            justifyContent: 'flex-end',
+                            gap: 8,
+                            marginTop: 8
+                        }}
+                    >
+                        <button
+                            type="button"
+                            className="btn btn--ghost"
+                            onClick={() => {
+                                setCommentDraft('');
+                                setCommentUIOpen(false);
+                                commentRef.current?.blur();
+                            }}
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                            className='btn btn--primary'
+                            type="submit"
+                            disabled={!commentDraft.trim()}
+                        >
+                            Comment
+                        </button>
                     </div>
                 </form>
 
@@ -192,7 +242,7 @@ export default function PostPage() {
                                         );
                                     })()}
                                     {canDelete && (
-                                        <button onClick={() => dispatch(deleteComment(c.id))} style={{ marginLeft: 'auto' }}>
+                                        <button className='btn btn--ghost' onClick={() => dispatch(deleteComment(c.id))} style={{ marginLeft: 'auto' }}>
                                             Delete
                                         </button>
                                     )}
