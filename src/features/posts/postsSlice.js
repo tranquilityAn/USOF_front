@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { fetchPostsRequest, fetchPostByIdRequest, reactToPostRequest, removePostReactionRequest, fetchPostReactionsRequest, fetchCommentsByPostRequest, fetchPostCategoriesRequest } from './postsApi';
+import { fetchPostsRequest, fetchPostByIdRequest, reactToPostRequest, removePostReactionRequest, fetchPostReactionsRequest, fetchCommentsByPostRequest, fetchPostCategoriesRequest, createPostRequest } from './postsApi';
 import { fetchUserByIdRequest } from '../authors/authorsApi';
 
 const countReactions = (arr = []) => {
@@ -109,7 +109,6 @@ export const togglePostReaction = createAsyncThunk(
     async ({ id, type }, { getState, rejectWithValue }) => {
         try {
             const state = getState();
-            //const current = state.posts.current;
             const my = state.posts.myReactionByPost?.[id] ?? null;
 
             if (my === type) {
@@ -121,6 +120,19 @@ export const togglePostReaction = createAsyncThunk(
             }
         } catch (err) {
             return rejectWithValue(err?.response?.data?.message || 'Failed to react');
+        }
+    }
+);
+
+export const createPost = createAsyncThunk(
+    'posts/create',
+    async (payload, { rejectWithValue }) => {
+        try {
+            const post = await createPostRequest(payload); // {id, title, content, ...}
+            return post;
+        } catch (err) {
+            const msg = err?.response?.data?.message || err?.message || 'Failed to create post';
+            return rejectWithValue(msg);
         }
     }
 );
@@ -206,6 +218,18 @@ const postsSlice = createSlice({
                     if (next === 'dislike') cur.dislikesCount = (cur.dislikesCount || 0) + 1;
                 }
                 s.myReactionByPost[id] = next;
+            })
+
+            //create post
+            .addCase(createPost.pending, (s) => {
+                s.createLoading = true; s.createError = null; s.lastCreatedId = null;
+            })
+            .addCase(createPost.fulfilled, (s, a) => {
+                s.createLoading = false; s.createError = null; s.lastCreatedId = a.payload?.id ?? null;
+                if (a.payload) s.items = [a.payload, ...s.items];
+            })
+            .addCase(createPost.rejected, (s, a) => {
+                s.createLoading = false; s.createError = a.payload || a.error?.message || 'Failed';
             });
     }
 });

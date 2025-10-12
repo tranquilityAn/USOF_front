@@ -28,9 +28,12 @@ export default function Header() {
                         <div className={styles.userBlock}>
                             {isAuth ? (
                                 <>
+                                    <Link to="/post/new" className={styles.userLink}>Create</Link>
+
                                     <Link to="/favorites" className={styles.userLink}>
                                         Favorites
                                     </Link>
+
                                     <Link to={`/profile/${user?.id || 'me'}`} className={styles.userLink}>
                                         {user?.login ? `@${user.login}` : '@user'} • {user?.role || 'user'}
                                     </Link>

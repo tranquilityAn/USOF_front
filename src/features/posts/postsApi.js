@@ -39,3 +39,9 @@ export const removePostReactionRequest = async (id) => {
     const { data } = await api.delete(`/posts/${id}/like`);
     return data;
 };
+
+// create post
+export const createPostRequest = async ({ title, content, categories }) => {
+const { data } = await api.post('/posts', { title, content, categories });
+return data; // Created Post
+};

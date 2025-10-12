@@ -80,9 +80,9 @@ export default function HomePage() {
 
     // Контент
     const content = useMemo(() => {
-        if (posts.loading) return <div style={{ color: '#aaa' }}>Завантаження…</div>;
+        if (posts.loading) return <div style={{ color: '#aaa' }}>Loading……</div>;
         if (posts.error) return <div style={{ color: '#ff6b6b' }}>{posts.error}</div>;
-        if (!posts.items.length) return <div style={{ color: '#aaa' }}>Пости не знайдено</div>;
+        if (!posts.items.length) return <div style={{ color: '#aaa' }}>Nothing found</div>;
         return (
             <div style={{ display: 'grid', gap: 12 }}>
                 {posts.items.map(p => <PostCard key={p.id} post={p} />)}
