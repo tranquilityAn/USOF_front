@@ -5,22 +5,12 @@ import {
     reactToPostRequest,
     removePostReactionRequest,
     fetchPostReactionsRequest,
-    fetchCommentsByPostRequest,
     fetchPostCategoriesRequest,
     createPostRequest,
     updatePostRequest,
     deletePostRequest
 } from './postsApi';
-import { fetchUserByIdRequest } from '../authors/authorsApi';
-
-const countReactions = (arr = []) => {
-    let likes = 0, dislikes = 0;
-    for (const r of arr) {
-        if (r?.type === 'like') likes++;
-        else if (r?.type === 'dislike') dislikes++;
-    }
-    return { likes, dislikes };
-};
+import { hydratePost } from './hydratePost';
 
 export const fetchPosts = createAsyncThunk(
     'posts/fetch',
@@ -28,45 +18,7 @@ export const fetchPosts = createAsyncThunk(
         try {
             const res = await fetchPostsRequest(params); // { items, page, limit, total }
 
-            const filled = await Promise.all((res.items || []).map(async (p) => {
-                // reaction counter
-                if (p.likesCount == null || p.dislikesCount == null) {
-                    const reactions = await fetchPostReactionsRequest(p.id); // Array<{type,userId}>
-                    const { likes, dislikes } = countReactions(reactions);
-                    p.likesCount = likes;
-                    p.dislikesCount = dislikes;
-                }
-
-                // comment counter
-                if (p.commentsCount == null) {
-                    try {
-                        const comments = await fetchCommentsByPostRequest(p.id);
-                        p.commentsCount = comments?.length ?? 0;
-                    } catch { p.commentsCount = 0; }
-
-                }
-
-                // author
-                if (!p.author && (p.authorId || p.userId)) {
-                    const uid = p.authorId ?? p.userId;
-                    try {
-                        const u = await fetchUserByIdRequest(uid);
-                        p.author = u;
-                    } catch {
-                        p.author = { id: uid, login: 'anon' };
-                    }
-                }
-
-
-                if (!Array.isArray(p.categories) || !p.categories.length) {
-                    try {
-                        p.categories = await fetchPostCategoriesRequest(p.id);
-                    } catch { }
-                }
-
-                return p;
-            }));
-
+            const filled = await Promise.all((res.items || []).map(hydratePost));
             return fulfillWithValue({ ...res, items: filled });
         } catch (err) {
             return rejectWithValue(err?.response?.data?.message || 'Failed to load posts');
@@ -85,30 +37,16 @@ export const fetchPostById = createAsyncThunk(
             const state = getState();
             const me = state.auth?.user;
 
-            // post reactions
-            const reactions = await fetchPostReactionsRequest(id); // [{type,userId}]
-            const { likes, dislikes } = countReactions(reactions);
-            post.likesCount = post.likesCount ?? likes;
-            post.dislikesCount = post.dislikesCount ?? dislikes;
+            const hydrated = await hydratePost(post);
 
-            // my reacttion :|
-            let my = null;
+            let myReaction = null;
             if (me?.id) {
+                const reactions = await fetchPostReactionsRequest(id); // [{ type, userId }]
                 const mine = reactions.find(r => r.userId === me.id);
-                my = mine?.type ?? null;
+                myReaction = mine?.type ?? null;
             }
 
-            // post author
-            if (!post.author && (post.authorId || post.userId)) {
-                const uid = post.authorId ?? post.userId;
-                try {
-                    post.author = await fetchUserByIdRequest(uid);
-                } catch {
-                    post.author = { id: uid, login: 'anon' };
-                }
-            }
-
-            return { post, myReaction: my };
+            return { post: hydrated, myReaction };
         } catch (err) {
             return rejectWithValue(err?.response?.data?.message || 'Failed to load post');
         }

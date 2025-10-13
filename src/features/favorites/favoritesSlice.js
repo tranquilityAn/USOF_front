@@ -4,6 +4,7 @@ import {
     addFavoriteRequest,
     removeFavoriteRequest,
 } from './favoritesApi';
+import { hydratePost } from '../posts/hydratePost';
 
 export const fetchFavorites = createAsyncThunk(
     'favorites/fetchAll',
@@ -14,8 +15,8 @@ export const fetchFavorites = createAsyncThunk(
             const list = Array.isArray(res) ? res
                 : Array.isArray(res?.items) ? res.items
                     : [];
-
-            return fulfillWithValue(list);
+            const hydrated = await Promise.all(list.map(hydratePost));
+            return fulfillWithValue(hydrated);
         } catch (e) {
             return rejectWithValue(e?.response?.data?.message || 'Failed to load favorites');
         }
@@ -83,10 +84,9 @@ const favoritesSlice = createSlice({
             .addCase(fetchFavorites.pending, (s) => { s.loading = true; s.error = null; })
             .addCase(fetchFavorites.fulfilled, (s, { payload }) => {
                 s.loading = false;
-                const list = Array.isArray(payload) ? payload : [];
-                s.items = list;
-                s.ids = {};
-                for (const p of list) s.ids[p.id] = true;
+                s.error = null;
+                s.items = payload;
+                s.ids = Object.fromEntries(payload.map(p => [p.id, true]));
             })
             .addCase(fetchFavorites.rejected, (s, { payload }) => { s.loading = false; s.error = payload; })
             .addCase(addFavorite.pending, (s, { meta }) => { s.pending[meta.arg] = true; })
