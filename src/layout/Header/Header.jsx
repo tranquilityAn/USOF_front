@@ -112,7 +112,7 @@ export default function Header() {
 
                                                 {/* Заглушка Settings */}
                                                 <Link
-                                                    to="#"
+                                                    to="/settings/profile"
                                                     className={styles.dropdownItem}
                                                     role="menuitem"
                                                     onClick={closeDropdown}

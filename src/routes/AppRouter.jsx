@@ -8,6 +8,7 @@ import FavoritesPage from '../pages/FavoritesPage/FavoritesPage';
 import CreatePostPage from '../pages/CreatePostPage/CreatePostPage';
 import EditPostPage from '../pages/EditPostPage/EditPostPage';
 import PrivateRoute from './PrivateRoute'
+import SettingsPage from '../pages/SettingsPage/SettingsPage';
 
 export default function AppRouter() {
     return (
@@ -19,6 +20,7 @@ export default function AppRouter() {
             <Route path="/post/new" element={<PrivateRoute><CreatePostPage /></PrivateRoute>} />
             <Route path="/post/:id/edit" element={<PrivateRoute><EditPostPage /></PrivateRoute>} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/settings/profile" element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
             <Route path="/register" element={<RegisterPage />} />
         </Routes>
     );

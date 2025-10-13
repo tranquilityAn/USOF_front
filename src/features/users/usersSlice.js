@@ -1,0 +1,96 @@
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { updateUserRequest, uploadAvatarRequest, removeAvatarRequest, requestPasswordReset } from './usersApi';
+import { meRequest } from '../auth/authApi';
+
+export const updateMyProfile = createAsyncThunk(
+    'users/updateMyProfile',
+    async ({ id, patch }, { rejectWithValue }) => {
+        try {
+            await updateUserRequest(id, patch);
+            const me = await meRequest(id);
+            return me;
+        } catch (err) {
+            return rejectWithValue(err?.response?.data?.message || 'Failed to update profile');
+        }
+    }
+);
+
+export const uploadMyAvatar = createAsyncThunk(
+    'users/uploadMyAvatar',
+    async (file, { getState, rejectWithValue }) => {
+        try {
+            await uploadAvatarRequest(file);
+            const id = getState()?.auth?.user?.id;
+            const me = await meRequest(id);
+            return me;
+        } catch (err) {
+            return rejectWithValue(err?.response?.data?.message || 'Failed to upload avatar');
+        }
+    }
+);
+
+export const removeMyAvatar = createAsyncThunk(
+    'users/removeMyAvatar',
+    async (_, { getState, rejectWithValue }) => {
+        try {
+            await removeAvatarRequest();
+            const id = getState()?.auth?.user?.id;
+            const me = await meRequest(id);
+            return me;
+        } catch (err) {
+            return rejectWithValue(err?.response?.data?.message || 'Failed to remove avatar');
+        }
+    }
+);
+
+export const sendPasswordReset = createAsyncThunk(
+    'users/sendPasswordReset',
+    async (email, { rejectWithValue }) => {
+        try {
+            await requestPasswordReset(email);
+            return true;
+        } catch (err) {
+            return rejectWithValue(err?.response?.data?.message || 'Failed to send reset email');
+        }
+    }
+);
+
+const profileSlice = createSlice({
+    name: 'users',
+    initialState: {
+        me: null,
+        profile: { saving: false, error: null, success: false },
+        avatar: { pending: false, error: null, success: false },
+        password: { pending: false, error: null, sent: false },
+    },
+    reducers: {
+        setMe(state, action) { state.me = action.payload; },
+        clearProfileStatus(state) { state.profile = { saving: false, error: null, success: false }; },
+        clearAvatarStatus(state) { state.avatar = { pending: false, error: null, success: false }; },
+        clearPasswordStatus(state) { state.password = { pending: false, error: null, sent: false }; },
+    },
+    extraReducers: (b) => {
+        // PROFILE
+        b.addCase(updateMyProfile.pending, (s) => { s.profile.saving = true; s.profile.error = null; s.profile.success = false; })
+            .addCase(updateMyProfile.fulfilled, (s, a) => { s.profile.saving = false; s.profile.success = true; s.me = a.payload; })
+            .addCase(updateMyProfile.rejected, (s, a) => { s.profile.saving = false; s.profile.error = a.payload; s.profile.success = false; })
+
+            // AVATAR (upload)
+            .addCase(uploadMyAvatar.pending, (s) => { s.avatar.pending = true; s.avatar.error = null; s.avatar.success = false; })
+            .addCase(uploadMyAvatar.fulfilled, (s, a) => { s.avatar.pending = false; s.avatar.success = true; s.me = a.payload; })
+            .addCase(uploadMyAvatar.rejected, (s, a) => { s.avatar.pending = false; s.avatar.error = a.payload; s.avatar.success = false; })
+
+            // AVATAR (remove)
+            .addCase(removeMyAvatar.pending, (s) => { s.avatar.pending = true; s.avatar.error = null; s.avatar.success = false; })
+            .addCase(removeMyAvatar.fulfilled, (s, a) => { s.avatar.pending = false; s.avatar.success = true; s.me = a.payload; })
+            .addCase(removeMyAvatar.rejected, (s, a) => { s.avatar.pending = false; s.avatar.error = a.payload; s.avatar.success = false; })
+
+            // PASSWORD RESET
+            .addCase(sendPasswordReset.pending, (s) => { s.password.pending = true; s.password.sent = false; s.password.error = null; })
+            .addCase(sendPasswordReset.fulfilled, (s) => { s.password.pending = false; s.password.sent = true; })
+            .addCase(sendPasswordReset.rejected, (s, a) => { s.password.pending = false; s.password.error = a.payload; });
+    }
+});
+
+export default profileSlice.reducer;
+export const { setMe, clearProfileStatus, clearAvatarStatus, clearPasswordStatus } = profileSlice.actions;

@@ -32,9 +32,11 @@ export const login = createAsyncThunk(
 
 export const fetchMe = createAsyncThunk(
     'auth/me',
-    async (_, { rejectWithValue }) => {
+    async (id, { getState, rejectWithValue }) => {
         try {
-            const user = await meRequest();
+            const state = getState();
+            const safeId = id ?? state?.auth?.user?.id;
+            const user = await meRequest(safeId);
             return user;
         } catch (err) {
             return rejectWithValue('Failed to load profile');
@@ -44,54 +46,6 @@ export const fetchMe = createAsyncThunk(
 
 const initialToken = localStorage.getItem('token');
 
-// const authSlice = createSlice({
-//     name: 'auth',
-//     initialState: {
-//         user: null,
-//         token: initialToken || null,
-//         status: 'idle',   // idle | loading | succeeded | failed
-//         error: null,
-//     },
-//     reducers: {
-//         logout(state) {
-//             state.user = null;
-//             state.token = null;
-//             localStorage.removeItem('token');
-//         },
-//     },
-//     extraReducers: (builder) => {
-//         builder
-//             // LOGIN
-//             .addCase(login.pending, (state) => {
-//                 state.status = 'loading';
-//                 state.error = null;
-//             })
-//             .addCase(login.fulfilled, (state, action) => {
-//                 state.status = 'succeeded';
-//                 const { token, user } = action.payload || {};
-//                 if (token) {
-//                     state.token = token;
-//                     localStorage.setItem('token', token);
-//                 }
-//                 if (user) state.user = user;
-//             })
-//             .addCase(login.rejected, (state, action) => {
-//                 state.status = 'failed';
-//                 state.error = action.payload || 'Login failed';
-//             })
-//             // ME
-//             .addCase(fetchMe.pending, (state) => {
-//                 // не обов’язково міняти статус, щоб не мигало в UI
-//             })
-//             .addCase(fetchMe.fulfilled, (state, action) => {
-//                 state.user = action.payload;
-//             })
-//             .addCase(fetchMe.rejected, (state) => {
-//                 // якщо токен невалідний — чистимо
-//                 state.user = null;
-//             });
-//     },
-// });
 const authSlice = createSlice({
     name: 'auth',
     initialState: {
@@ -99,7 +53,6 @@ const authSlice = createSlice({
         token: initialToken || null,
         status: 'idle',
         error: null,
-        // опційно: окремий стан для реєстрації
         registerStatus: 'idle',
         registerError: null,
     },
