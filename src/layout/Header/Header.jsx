@@ -3,6 +3,11 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../features/auth/authSlice';
 import styles from './Header.module.css';
+import { CgProfile } from 'react-icons/cg';
+import { AiOutlineHeart } from 'react-icons/ai';
+import { IoSettingsOutline } from "react-icons/io5";
+import { RxExit } from "react-icons/rx";
+import { IoCreateOutline } from "react-icons/io5";
 
 export default function Header() {
     const navigate = useNavigate();
@@ -55,71 +60,81 @@ export default function Header() {
                         <div className={styles.userBlock}>
                             {isAuth ? (
                                 <>
-                                    <Link to="/post/new" className={styles.userLink}>Create</Link>
-
-                                {/* --- DROPDOWN --- */}
-                                <div className={styles.dropdown} ref={dropdownRef}>
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsDropdownOpen((v) => !v)}
-                                        className={styles.dropdownToggle}
-                                        aria-haspopup="menu"
-                                        aria-expanded={isDropdownOpen ? 'true' : 'false'}
-                                        aria-label="User menu"
+                                    <Link
+                                        to="/post/new"
+                                        className='btn btn--primary'
+                                        aria-label="Create a new post"
                                     >
-                                        {user?.avatar ? (
-                                            <img src={user.avatar} alt="avatar" className={styles.avatar} />
-                                        ) : (
-                                            <div className={styles.avatar} />
+                                        <IoCreateOutline />
+                                        Create
+                                    </Link>
+                                    {/* --- DROPDOWN --- */}
+                                    <div className={styles.dropdown} ref={dropdownRef}>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsDropdownOpen((v) => !v)}
+                                            className={styles.dropdownToggle}
+                                            aria-haspopup="menu"
+                                            aria-expanded={isDropdownOpen ? 'true' : 'false'}
+                                            aria-label="User menu"
+                                        >
+                                            {user?.avatar ? (
+                                                <img src={user.avatar} alt="avatar" className={styles.avatar} />
+                                            ) : (
+                                                <div className={styles.avatar} />
+                                            )}
+                                            <span className={styles.userHandle}>
+                                                {user?.login ? `@${user.login}` : '@user'}
+                                            </span>
+                                        </button>
+
+                                        {isDropdownOpen && (
+                                            <div className={styles.dropdownMenu} role="menu">
+                                                <Link
+                                                    to={`/profile/${user?.id || 'me'}`}
+                                                    className={styles.dropdownItem}
+                                                    role="menuitem"
+                                                    onClick={closeDropdown}
+                                                >
+                                                    <CgProfile />
+                                                    Profile
+                                                </Link>
+
+                                                <Link
+                                                    to="/favorites"
+                                                    className={styles.dropdownItem}
+                                                    role="menuitem"
+                                                    onClick={closeDropdown}
+                                                >
+                                                    <AiOutlineHeart />
+                                                    Favorites
+                                                </Link>
+
+                                                {/* Заглушка Settings */}
+                                                <Link
+                                                    to="#"
+                                                    className={styles.dropdownItem}
+                                                    role="menuitem"
+                                                    onClick={closeDropdown}
+                                                >
+                                                    <IoSettingsOutline />
+                                                    Settings
+                                                </Link>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={handleLogout}
+                                                    className={`${styles.dropdownItem} ${styles.logoutButton}`}
+                                                    role="menuitem"
+                                                >
+                                                    <RxExit />
+                                                    Log out
+                                                </button>
+                                            </div>
                                         )}
-                                        <span className={styles.userHandle}>
-                                            {user?.login ? `@${user.login}` : '@user'}
-                                        </span>
-                                    </button>
-
-                                    {isDropdownOpen && (
-                                        <div className={styles.dropdownMenu} role="menu">
-                                            <Link
-                                                to={`/profile/${user?.id || 'me'}`}
-                                                className={styles.dropdownItem}
-                                                role="menuitem"
-                                                onClick={closeDropdown}
-                                            >
-                                                Profile
-                                            </Link>
-
-                                            <Link
-                                                to="/favorites"
-                                                className={styles.dropdownItem}
-                                                role="menuitem"
-                                                onClick={closeDropdown}
-                                            >
-                                                Favorites
-                                            </Link>
-
-                                            {/* Заглушка Settings */}
-                                            <Link
-                                                to="#"
-                                                className={styles.dropdownItem}
-                                                role="menuitem"
-                                                onClick={closeDropdown}
-                                            >
-                                                Settings
-                                            </Link>
-
-                                            <button
-                                                type="button"
-                                                onClick={handleLogout}
-                                                className={`${styles.dropdownItem} ${styles.logoutButton}`}
-                                                role="menuitem"
-                                            >
-                                                Log out
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                                {/* --- /DROPDOWN --- */}
-                            </>
+                                    </div>
+                                    {/* --- /DROPDOWN --- */}
+                                </>
                             ) : (
                                 <div className={styles.Links}>
                                     <Link to="/login" className={styles.userLink}>Sign in</Link>

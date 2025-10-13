@@ -281,9 +281,7 @@ const postsSlice = createSlice({
                 s.updateLoading = false;
                 s.updateError = null;
                 const p = a.payload;
-                // онови current
                 if (s.current?.id === p.id) s.current = p;
-                // онови в списку
                 const idx = s.items.findIndex(x => x.id === p.id);
                 if (idx !== -1) s.items[idx] = p;
             })
