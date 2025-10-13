@@ -55,12 +55,12 @@
     text-decoration: underline;
 }
 
-.avatar {
+/* .avatar {
     width: 28px;
     height: 28px;
     border-radius: 50%;
     background: #333;
-}
+} */
 
 .button {
     padding: 6px 12px;
@@ -74,4 +74,86 @@
 
 .button:hover {
     background: #3a6edc;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-flex;
+}
+
+.dropdownToggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    cursor: pointer;
+    transition: background .15s ease, border-color .15s ease, transform .12s ease;
+}
+
+.dropdownToggle:hover {
+    background: #141a21;
+    border-color: #334355;
+    transform: translateY(-1px);
+}
+
+.userHandle {
+    font-size: 14px;
+    color: var(--muted);
+}
+
+.dropdownMenu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    min-width: 220px;
+    padding: 8px;
+    border-radius: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: 0 12px 28px 0 var(--shadow-color);
+    z-index: 30;
+}
+
+.dropdownItem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    text-decoration: none;
+    color: var(--text);
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    transition: background .12s ease, border-color .12s ease, transform .12s ease;
+    cursor: pointer;
+    background: transparent;
+}
+
+.dropdownItem:hover {
+    background: #141a21;
+    border-color: #334355;
+    transform: translateY(-1px);
+}
+
+.logoutButton {
+    color: #ffd2d2;
+    border-color: rgba(255, 107, 107, .25);
+}
+
+.logoutButton:hover {
+    background: rgba(255, 107, 107, .12);
+    border-color: rgba(255, 107, 107, .45);
+}
+
+.avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: #222a33;
+    border: 1px solid var(--border);
+    object-fit: cover;
 }

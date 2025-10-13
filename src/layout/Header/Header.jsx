@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../features/auth/authSlice';
@@ -13,6 +14,32 @@ export default function Header() {
 
     // Header without search/user block on login and register pages
     const isAuthPage = ['/login', '/register'].includes(location.pathname);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
+    const closeDropdown = () => setIsDropdownOpen(false);
+
+    const handleLogout = () => {
+        dispatch(logout());
+        closeDropdown();
+        navigate('/login');
+    };
+
+    useEffect(() => {
+        const onDocClick = (e) => {
+            if (!dropdownRef.current) return;
+            if (!dropdownRef.current.contains(e.target)) setIsDropdownOpen(false);
+        };
+        const onKey = (e) => {
+            if (e.key === 'Escape') setIsDropdownOpen(false);
+        };
+        document.addEventListener('mousedown', onDocClick);
+        document.addEventListener('keydown', onKey);
+        return () => {
+            document.removeEventListener('mousedown', onDocClick);
+            document.removeEventListener('keydown', onKey);
+        };
+    }, []);
+
 
     return (
         <header className={styles.header}>
@@ -30,25 +57,69 @@ export default function Header() {
                                 <>
                                     <Link to="/post/new" className={styles.userLink}>Create</Link>
 
-                                    <Link to="/favorites" className={styles.userLink}>
-                                        Favorites
-                                    </Link>
-
-                                    <Link to={`/profile/${user?.id || 'me'}`} className={styles.userLink}>
-                                        {user?.login ? `@${user.login}` : '@user'} • {user?.role || 'user'}
-                                    </Link>
-                                    {user?.avatar ? (
-                                        <img src={user.avatar} alt="avatar" className={styles.avatar} />
-                                    ) : (
-                                        <div className={styles.avatar} />
-                                    )}
+                                {/* --- DROPDOWN --- */}
+                                <div className={styles.dropdown} ref={dropdownRef}>
                                     <button
-                                        onClick={() => { dispatch(logout()); navigate('/'); }}
-                                        className="btn btn--ghost"
+                                        type="button"
+                                        onClick={() => setIsDropdownOpen((v) => !v)}
+                                        className={styles.dropdownToggle}
+                                        aria-haspopup="menu"
+                                        aria-expanded={isDropdownOpen ? 'true' : 'false'}
+                                        aria-label="User menu"
                                     >
-                                        Log out
+                                        {user?.avatar ? (
+                                            <img src={user.avatar} alt="avatar" className={styles.avatar} />
+                                        ) : (
+                                            <div className={styles.avatar} />
+                                        )}
+                                        <span className={styles.userHandle}>
+                                            {user?.login ? `@${user.login}` : '@user'}
+                                        </span>
                                     </button>
-                                </>
+
+                                    {isDropdownOpen && (
+                                        <div className={styles.dropdownMenu} role="menu">
+                                            <Link
+                                                to={`/profile/${user?.id || 'me'}`}
+                                                className={styles.dropdownItem}
+                                                role="menuitem"
+                                                onClick={closeDropdown}
+                                            >
+                                                Profile
+                                            </Link>
+
+                                            <Link
+                                                to="/favorites"
+                                                className={styles.dropdownItem}
+                                                role="menuitem"
+                                                onClick={closeDropdown}
+                                            >
+                                                Favorites
+                                            </Link>
+
+                                            {/* Заглушка Settings */}
+                                            <Link
+                                                to="#"
+                                                className={styles.dropdownItem}
+                                                role="menuitem"
+                                                onClick={closeDropdown}
+                                            >
+                                                Settings
+                                            </Link>
+
+                                            <button
+                                                type="button"
+                                                onClick={handleLogout}
+                                                className={`${styles.dropdownItem} ${styles.logoutButton}`}
+                                                role="menuitem"
+                                            >
+                                                Log out
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                                {/* --- /DROPDOWN --- */}
+                            </>
                             ) : (
                                 <div className={styles.Links}>
                                     <Link to="/login" className={styles.userLink}>Sign in</Link>
