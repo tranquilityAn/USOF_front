@@ -1,11 +1,13 @@
-import { useEffect, useMemo } from 'react';
+//import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useParams, useNavigate } from 'react-router-dom';
+//import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { fetchUserById } from '../../features/authors/authorsSlice';
 import UserLayout from '../../components/User/UserLayout';
 import UserHeader from '../../components/User/UserHeader';
 import UserStats from '../../components/User/UserStats';
-import UserActions from '../../components/User/UserActions';
+//import UserActions from '../../components/User/UserActions';
 import UserPostsPanel from '../../components/User/UserPostsPanel';
 
 
@@ -13,11 +15,11 @@ export default function ProfilePage() {
     const { id } = useParams();
     const userId = Number(id);
     const dispatch = useDispatch();
-    const navigate = useNavigate();
+    //const navigate = useNavigate();
 
 
     const authors = useSelector(s => s.authors);
-    const me = useSelector(s => s.auth?.user);
+    //const me = useSelector(s => s.auth?.user);
 
 
     const user = authors.byId?.[userId];
@@ -30,7 +32,7 @@ export default function ProfilePage() {
     }, [dispatch, userId, user, loading]);
 
 
-    const canEdit = useMemo(() => !!me && me.id === userId, [me, userId]);
+    //const canEdit = useMemo(() => !!me && me.id === userId, [me, userId]);
 
 
     if (loading && !user) return <div className="container"><div className="card">Loading user…</div></div>;
@@ -42,7 +44,7 @@ export default function ProfilePage() {
         <>
             <UserHeader user={user} />
             <UserStats rating={user.rating ?? 0} postsCount={undefined} />
-            <UserActions canEdit={canEdit} onEdit={() => navigate('/settings/profile')} />
+            {/* <UserActions canEdit={canEdit} onEdit={() => navigate('/settings/profile')} /> */}
         </>
     );
 
