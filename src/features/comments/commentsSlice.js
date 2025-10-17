@@ -278,6 +278,7 @@ const commentsSlice = createSlice({
                 loading: false,
                 error: null,
             };
+            findAndUpdateComment(s, commentId, (self) => { self.replyCount = total; });
             for (const c of items || []) {
                 if (c.__myReaction !== undefined) {
                     s.myReactionByComment[c.id] = c.__myReaction;

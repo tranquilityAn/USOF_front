@@ -13,7 +13,7 @@ export default function CommentNode({ postId, comment, depth = 0, maxDepth = 50 
     const repliesBucket = useSelector(s => s.comments.repliesByComment[comment.id]);
     const [open, setOpen] = useState(false);
     const [draft, setDraft] = useState('');
-
+    const repliesTotal = (repliesBucket?.total ?? comment.replyCount ?? 0);
     const isOwner = user?.id && comment.author?.id === user.id;
 
     const toggleOpen = () => {
@@ -56,7 +56,7 @@ export default function CommentNode({ postId, comment, depth = 0, maxDepth = 50 
                     <button className="btn btn--ghost" onClick={onLike}>👍 {comment.likesCount ?? 0}</button>
                     <button className="btn btn--ghost" onClick={onDislike}>👎 {comment.dislikesCount ?? 0}</button>
                     <button className="btn btn--ghost" onClick={toggleOpen}>
-                        {open ? 'Hide replies' : `View replies (${comment.replyCount || 0})`}
+                        {open ? 'Hide replies' : `View replies (${repliesTotal})`}
                     </button>
                     <button className="btn btn--ghost" onClick={() => setOpen(true)}>Reply</button>
                     {isOwner && (
