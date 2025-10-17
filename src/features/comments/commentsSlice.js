@@ -64,6 +64,28 @@ export const fetchCommentsByPost = createAsyncThunk(
     }
 );
 
+const ensureReplyBucket = (state, parentId) => {
+    if (!state.repliesByComment[parentId]) {
+        state.repliesByComment[parentId] = { items: [], page: 1, limit: 20, total: 0 };
+    }
+};
+
+const findAndUpdateComment = (state, commentId, updater) => {
+    // 1) top level
+    for (const postId in state.byPost) {
+        const arr = state.byPost[postId];
+        const idx = arr.findIndex(c => c.id === commentId);
+        if (idx !== -1) { updater(arr[idx], { postId, bucket: arr }); return true; }
+    }
+    // 2) replies
+    for (const parentId in state.repliesByComment) {
+        const bucket = state.repliesByComment[parentId];
+        const idx = bucket.items.findIndex(c => c.id === commentId);
+        if (idx !== -1) { updater(bucket.items[idx], { parentId, bucket: bucket.items }); return true; }
+    }
+    return false;
+};
+
 export const fetchRepliesByComment = createAsyncThunk(
     'comments/fetchRepliesByComment',
     async ({ postId, commentId, page = 1, limit = 20 }, { rejectWithValue, getState }) => {
@@ -104,10 +126,9 @@ export const fetchRepliesByComment = createAsyncThunk(
     }
 );
 
-
 export const addComment = createAsyncThunk('comments/add', async ({ postId, content, parentId = null }, { rejectWithValue }) => {
     try {
-        const created = await addCommentRequest(postId, { content, parentId });
+        const created = await addCommentRequest({ postId, content, parentId }); // ✅ новий виклик
         created.likesCount = 0; created.dislikesCount = 0;
         return { postId, parentId, comment: created };
     } catch (err) {
@@ -161,42 +182,38 @@ const commentsSlice = createSlice({
             }
         });
         b.addCase(fetchCommentsByPost.rejected, (s, a) => { s.loading = false; s.error = a.payload || 'Error'; });
-        b.addCase(addComment.fulfilled, (s, { payload }) => {
-            const { postId, parentId, comment } = payload;
-            if (parentId) {
-                if (!s.repliesByComment[parentId]) {
-                    s.repliesByComment[parentId] = { items: [], total: 0, page: 1, limit: 20, loading: false, error: null };
-                }
-                s.repliesByComment[parentId].items.unshift(comment);
-                s.repliesByComment[parentId].total += 1;
+        b.addCase(addComment.fulfilled, (s, { payload: comment }) => {
+            const { postId, parentId } = comment;
 
-                const top = s.byPost[postId] || [];
-                const parent = top.find(x => x.id === parentId);
-                if (parent) parent.replyCount = (parent.replyCount || 0) + 1;
-            } else {
+            if (parentId == null) {
                 if (!s.byPost[postId]) s.byPost[postId] = [];
                 s.byPost[postId].unshift(comment);
+            } else {
+                ensureReplyBucket(s, parentId);
+                s.repliesByComment[parentId].items.push(comment);
+                s.repliesByComment[parentId].total = (s.repliesByComment[parentId].total || 0) + 1;
+
+                findAndUpdateComment(s, parentId, (parent) => {
+                    parent.replyCount = (parent.replyCount || 0) + 1;
+                });
             }
         });
         b.addCase(deleteComment.fulfilled, (s, { payload }) => {
             const id = payload.id;
-
             for (const postId in s.byPost) {
                 const before = s.byPost[postId].length;
                 s.byPost[postId] = s.byPost[postId].filter(c => c.id !== id);
                 if (s.byPost[postId].length !== before) return;
             }
-
             for (const parentId in s.repliesByComment) {
                 const bucket = s.repliesByComment[parentId];
                 const before = bucket.items.length;
                 bucket.items = bucket.items.filter(c => c.id !== id);
                 if (bucket.items.length !== before) {
                     bucket.total = Math.max(0, (bucket.total || before) - 1);
-                    for (const postId in s.byPost) {
-                        const parent = s.byPost[postId].find(x => x.id === Number(parentId));
-                        if (parent) parent.replyCount = Math.max(0, (parent.replyCount || 1) - 1);
-                    }
+                    findAndUpdateComment(s, Number(parentId), (parent) => {
+                        parent.replyCount = Math.max(0, (parent.replyCount || 1) - 1);
+                    });
                     return;
                 }
             }

@@ -19,9 +19,10 @@ export const fetchCommentReactionsRequest = async (commentId) => {
     return data; // Array<Like>
 };
 
-export const addCommentRequest = async (postId, payload) => {
-    const { data } = await api.post(`/posts/${postId}/comments`, payload);
-    return data; // created comment
+export const addCommentRequest = async ({ postId, content, parentId = null }) => {
+    const body = parentId ? { content, parentId } : { content };
+    const { data } = await api.post(`/posts/${postId}/comments`, body);
+    return data;
 };
 
 export const deleteCommentRequest = async (commentId) => {
