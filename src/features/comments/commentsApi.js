@@ -5,6 +5,14 @@ export const fetchCommentsByPostRequest = async (postId) => {
     return data; // Array<Comment>
 };
 
+export const fetchRepliesByCommentRequest = async (postId, commentId, { page = 1, limit = 20 } = {}) => {
+    const { data } = await api.get(`/posts/${postId}/comments/${commentId}/replies`, {
+        params: { page, limit },
+    });
+    // очікується: { items: Comment[], total, page, limit }
+    return data;
+};
+
 // окремо добираємо реакції для конкретного комента
 export const fetchCommentReactionsRequest = async (commentId) => {
     const { data } = await api.get(`/comments/${commentId}/like`);
@@ -26,11 +34,6 @@ export const reactToCommentRequest = async (commentId, type /* 'like'|'dislike' 
     const { data } = await api.post(`/comments/${commentId}/like`, { type });
     return data;
 };
-
-// export const likeCommentRequest = async (commentId) => {
-//     const { data } = await api.post(`/comments/${commentId}/like`);
-//     return data; // { liked:true, likesCount, dislikesCount } (або подібно)
-// };
 
 export const unlikeCommentRequest = async (commentId) => {
     const { data } = await api.delete(`/comments/${commentId}/like`);

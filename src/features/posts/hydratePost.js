@@ -35,13 +35,24 @@ export async function hydratePost(p) {
     // 2) Comments count
     if (post.commentsCount == null) {
         try {
-            const comments = await fetchCommentsByPostRequest(post.id);
-            post.commentsCount = comments?.length ?? 0;
+            const commentsRes = await fetchCommentsByPostRequest(post.id);
+
+            if (Array.isArray(commentsRes)) {
+                post.commentsCount = commentsRes.length;
+            } else if (commentsRes && typeof commentsRes === 'object') {
+                const { total, items } = commentsRes;
+                post.commentsCount =
+                    (typeof total === 'number')
+                        ? total
+                        : (Array.isArray(items) ? items.length : 0);
+            } else {
+                post.commentsCount = 0;
+            }
         } catch {
             post.commentsCount = post.commentsCount ?? 0;
         }
     }
-
+    
     // 3) Author
     if (!post.author && (post.authorId || post.userId)) {
         const authorId = post.authorId ?? post.userId;

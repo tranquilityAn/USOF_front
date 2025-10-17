@@ -7,6 +7,7 @@ import {
     addComment,
     deleteComment,
     toggleCommentReaction,
+    fetchRepliesByComment
 } from '../../features/comments/commentsSlice';
 import CategoryChips from '../../components/CategoryChips/CategoryChips';
 import { AiOutlineLike, AiFillLike, AiOutlineDislike, AiFillDislike, AiOutlineHeart, AiFillHeart } from 'react-icons/ai';
@@ -20,7 +21,7 @@ export default function PostPage() {
 
     const { current: post, currentLoading, currentError, myReactionByPost, deleteLoading, deleteError } = useSelector(s => s.posts);
     const myReaction = myReactionByPost?.[postId] ?? null;
-    const { byPost, loading: commentsLoading, myReactionByComment } = useSelector(s => s.comments);
+    const { byPost, repliesByComment, loading: commentsLoading, myReactionByComment } = useSelector(s => s.comments);
     const comments = byPost[postId] || [];
     const auth = useSelector(s => s.auth);
     const isLoggedIn = Boolean(auth?.user);
@@ -30,6 +31,8 @@ export default function PostPage() {
     const [commentUIOpen, setCommentUIOpen] = useState(false);
     const commentRef = useRef(null);
     const { user, token } = useSelector(s => s.auth);
+    const [openReplies, setOpenReplies] = useState({});
+    const [replyDrafts, setReplyDrafts] = useState({});
 
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef(null);
@@ -100,6 +103,29 @@ export default function PostPage() {
         setCommentUIOpen(false);
         commentRef.current?.blur();
     };
+
+    const toggleReplies = (commentId) => {
+        const next = !openReplies[commentId];
+        setOpenReplies(prev => ({ ...prev, [commentId]: next }));
+        if (next) {
+            const bucket = repliesByComment[commentId];
+            if (!bucket || (bucket && bucket.items.length === 0)) {
+                dispatch(fetchRepliesByComment({ postId, commentId, page: 1, limit: 20 }));
+            }
+        }
+    };
+
+    const onReplyChange = (commentId, v) => setReplyDrafts(prev => ({ ...prev, [commentId]: v }));
+
+    const submitReply = (e, parentId) => {
+        e.preventDefault();
+        if (requireAuth()) return;
+        const content = (replyDrafts[parentId] || '').trim();
+        if (!content) return;
+        dispatch(addComment({ postId, content, parentId }));
+        setReplyDrafts(prev => ({ ...prev, [parentId]: '' }));
+    };
+
 
     const authorLabel = post.author?.name || post.author?.login || `@user_${post.author?.id || 'anon'}`;
 
@@ -323,6 +349,23 @@ export default function PostPage() {
                                                     {dislikeActive ? <AiFillDislike /> : <AiOutlineDislike />}
                                                     {c.dislikesCount ?? 0}
                                                 </button>
+                                                <button
+                                                    className='btn btn--ghost'
+                                                    onClick={() => onReplyChange(c.id, (replyDrafts[c.id] || '')) || setOpenReplies(p => ({ ...p, [c.id]: true }))}
+                                                    title='Reply'
+                                                >
+                                                    Reply
+                                                </button>
+
+                                                {(c.replyCount || 0) > 0 && (
+                                                    <button
+                                                        className='btn btn--ghost'
+                                                        onClick={() => toggleReplies(c.id)}
+                                                        title='View replies'
+                                                    >
+                                                        {openReplies[c.id] ? 'Hide replies' : `View replies (${c.replyCount})`}
+                                                    </button>
+                                                )}
                                             </>
                                         );
                                     })()}
@@ -332,6 +375,87 @@ export default function PostPage() {
                                         </button>
                                     )}
                                 </div>
+
+                                {/* Reply form */}
+                                {openReplies[c.id] && (
+                                    <form onSubmit={(e) => submitReply(e, c.id)} style={{ marginTop: 8 }}>
+                                        <textarea
+                                            value={replyDrafts[c.id] || ''}
+                                            onChange={e => onReplyChange(c.id, e.target.value)}
+                                            placeholder='Write a reply...'
+                                            style={{ width: '100%', background: '#1e1e1e', color: '#f5f5f5', border: '1px solid #333', borderRadius: 8, padding: 8 }}
+                                        />
+                                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 8 }}>
+                                            <button type='button' className='btn btn--ghost' onClick={() => setReplyDrafts(p => ({ ...p, [c.id]: '' }))}>Clear</button>
+                                            <button type='submit' className='btn btn--primary'>Reply</button>
+                                        </div>
+                                    </form>
+                                )}
+
+                                {/* Reply list */}
+                                {openReplies[c.id] && (() => {
+                                    const bucket = repliesByComment[c.id];
+                                    if (!bucket) return <div style={{ opacity: .7, marginTop: 8 }}>Loading replies…</div>;
+                                    return (
+                                        <ul style={{ listStyle: 'none', paddingLeft: 16, marginTop: 8, display: 'grid', gap: 10 }}>
+                                            {bucket.items.map(r => {
+                                                const u = r.author;
+                                                const label = u?.name || u?.login || `@user_${u?.id || 'anon'}`;
+                                                const canDelete = isLoggedIn && auth.user?.id === (r.authorId ?? u?.id);
+                                                const likeActive = myReactionByComment?.[r.id] === 'like';
+                                                const dislikeActive = myReactionByComment?.[r.id] === 'dislike';
+
+                                                return (
+                                                    <li key={r.id} style={{ background: '#151515', border: '1px solid #2c2c2c', borderRadius: 10, padding: 10 }}>
+                                                        <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 6 }}>
+                                                            @{label} • {new Date(r.publishDate || r.createdAt).toLocaleString()}
+                                                            {r.status === 'inactive' ? <span style={{ color: '#f99' }}> • inactive</span> : null}
+                                                        </div>
+
+                                                        <div style={{ whiteSpace: 'pre-wrap' }}>{r.content}</div>
+
+                                                        <div style={{ display: 'flex', gap: 10, marginTop: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                                                            <button
+                                                                aria-pressed={likeActive}
+                                                                onClick={() => { if (requireAuth()) return; dispatch(toggleCommentReaction({ commentId: r.id, type: 'like' })); }}
+                                                                className='btn btn--ghost'
+                                                                title={likeActive ? 'Remove like' : 'Like'}
+                                                            >
+                                                                {likeActive ? <AiFillLike /> : <AiOutlineLike />} {r.likesCount ?? 0}
+                                                            </button>
+                                                            <button
+                                                                aria-pressed={dislikeActive}
+                                                                onClick={() => { if (requireAuth()) return; dispatch(toggleCommentReaction({ commentId: r.id, type: 'dislike' })); }}
+                                                                className='btn btn--ghost'
+                                                                title={dislikeActive ? 'Remove dislike' : 'Dislike'}
+                                                            >
+                                                                {dislikeActive ? <AiFillDislike /> : <AiOutlineDislike />} {r.dislikesCount ?? 0}
+                                                            </button>
+
+                                                            {canDelete && (
+                                                                <button className='btn btn--danger' onClick={() => dispatch(deleteComment(r.id))} style={{ marginLeft: 'auto' }}>
+                                                                    Delete
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </li>
+                                                );
+                                            })}
+
+                                            {/* Reply pagination */}
+                                            {(bucket.items.length < (bucket.total || 0)) && (
+                                                <li>
+                                                    <button
+                                                        className='btn btn--ghost'
+                                                        onClick={() => dispatch(fetchRepliesByComment({ postId, commentId: c.id, page: (bucket.page || 1) + 1, limit: bucket.limit || 20 }))}
+                                                    >
+                                                        Load more replies
+                                                    </button>
+                                                </li>
+                                            )}
+                                        </ul>
+                                    );
+                                })()}
                             </li>
                         );
                     })}
