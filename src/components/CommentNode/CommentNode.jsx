@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
     addComment,
@@ -6,109 +6,249 @@ import {
     toggleCommentReaction,
     fetchRepliesByComment,
 } from '../../features/comments/commentsSlice';
+import { AiOutlineLike, AiFillLike, AiOutlineDislike, AiFillDislike } from 'react-icons/ai';
 
 export default function CommentNode({ postId, comment, depth = 0, maxDepth = 50 }) {
     const dispatch = useDispatch();
-    const { user } = useSelector(s => s.auth);
-    const repliesBucket = useSelector(s => s.comments.repliesByComment[comment.id]);
-    const [open, setOpen] = useState(false);
-    const [draft, setDraft] = useState('');
-    const repliesTotal = (repliesBucket?.total ?? comment.replyCount ?? 0);
-    const isOwner = user?.id && comment.author?.id === user.id;
+    const { user: me } = useSelector((s) => s.auth);
+    const repliesBucket = useSelector((s) => s.comments.repliesByComment[comment.id]);
 
-    const toggleOpen = () => {
-        const next = !open;
-        setOpen(next);
-        if (next) {
-            if (!repliesBucket || (repliesBucket && repliesBucket.items.length === 0)) {
-                dispatch(fetchRepliesByComment({ postId, commentId: comment.id, page: 1, limit: 20 }));
-            }
+    const isMine = !!(me?.id && (comment.author?.id === me.id || comment.userId === me.id || comment.authorId === me.id));
+
+    const myCommentReaction = useSelector((s) => s.comments?.myReactionByComment?.[comment.id] ?? comment.myReaction ?? null);
+    const likeActive = myCommentReaction === 'like';
+    const dislikeActive = myCommentReaction === 'dislike';
+
+    const [repliesOpen, setRepliesOpen] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
+    const [replyDraftOpen, setReplyDraftOpen] = useState(false);
+    const [replyText, setReplyText] = useState('');
+
+    const menuRef = useRef(null);
+
+    // total replies preferring bucket.total -> fallback to comment.replyCount
+    const repliesTotal = repliesBucket?.total ?? comment.replyCount ?? 0;
+    const children = repliesBucket?.items || [];
+    const hasMore = (repliesBucket?.items?.length || 0) < (repliesBucket?.total || 0);
+
+    // close menu on outside click
+    useEffect(() => {
+        const onDocClick = (e) => {
+            if (!menuRef.current) return;
+            if (!menuRef.current.contains(e.target)) setMenuOpen(false);
+        };
+        document.addEventListener('click', onDocClick);
+        return () => document.removeEventListener('click', onDocClick);
+    }, []);
+
+    // load replies once when opening
+    useEffect(() => {
+        if (repliesOpen && !repliesBucket && repliesTotal > 0) {
+            dispatch(
+                fetchRepliesByComment({ postId, commentId: comment.id, page: 1, limit: 20 })
+            );
         }
-    };
-
-    const onReply = (e) => {
-        e.preventDefault();
-        const txt = draft.trim();
-        if (!txt) return;
-        dispatch(addComment({ postId, content: txt, parentId: comment.id }));
-        setDraft('');
-        if (!open) setOpen(true);
-    };
+    }, [repliesOpen, repliesBucket, repliesTotal, dispatch, postId, comment.id]);
 
     const onLike = () => dispatch(toggleCommentReaction({ commentId: comment.id, type: 'like' }));
     const onDislike = () => dispatch(toggleCommentReaction({ commentId: comment.id, type: 'dislike' }));
-    const onDelete = () => dispatch(deleteComment(comment.id));
 
-    const children = repliesBucket?.items || [];
-    const hasMore = (repliesBucket?.items.length || 0) < (repliesBucket?.total || 0);
+    const onReply = () => {
+        setReplyDraftOpen(true);
+    };
+
+    const onCancelReply = () => {
+        setReplyText('');
+        setReplyDraftOpen(false);
+    };
+
+    const onSubmitReply = async (e) => {
+        e?.preventDefault?.();
+        const content = replyText.trim();
+        if (!content) return;
+        try {
+            await dispatch(addComment({ postId, content, parentId: comment.id })).unwrap();
+            setReplyText('');
+            setReplyDraftOpen(false);
+            // ensure replies are visible after posting
+            if (!repliesOpen) setRepliesOpen(true);
+        } catch (err) {
+            // optional: show toast
+            console.error('Failed to add reply', err);
+        }
+    };
+
+    const onDelete = async () => {
+        if (!window.confirm('Delete this comment?')) return;
+        try {
+            await dispatch(deleteComment(comment.id)).unwrap();
+        } catch (err) {
+            console.error('Failed to delete comment', err);
+        }
+    };
+
+
+    // util: format date/time from createdAt/updatedAt
+    const dt = new Date(comment.createdAt || comment.updatedAt || Date.now());
+    const dateStr = isNaN(dt.getTime()) ? '' : dt.toLocaleDateString();
+    const timeStr = isNaN(dt.getTime()) ? '' : dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     return (
-        <li style={{ marginLeft: depth ? 16 : 0, paddingTop: 8 }}>
-            {/* header */}
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <div style={{ fontWeight: 600 }}>
-                    {comment.author?.name || comment.author?.login || `@user_${comment.author?.id || 'anon'}`}
-                </div>
-                <div style={{ fontSize: 12, opacity: .7 }}>
-                    {new Date(comment.publishDate || comment.createdAt).toLocaleString()}
-                </div>
-                <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-                    <button className="btn btn--ghost" onClick={onLike}>👍 {comment.likesCount ?? 0}</button>
-                    <button className="btn btn--ghost" onClick={onDislike}>👎 {comment.dislikesCount ?? 0}</button>
-                    <button className="btn btn--ghost" onClick={toggleOpen}>
-                        {open ? 'Hide replies' : `View replies (${repliesTotal})`}
-                    </button>
-                    <button className="btn btn--ghost" onClick={() => setOpen(true)}>Reply</button>
-                    {isOwner && (
-                        <button className="btn btn--danger" onClick={onDelete}>Delete</button>
+        <li style={{
+            marginLeft: depth ? 16 : 0,
+            listStyle: 'none',
+        }}>
+            {/* comment card */}
+            <div
+                style={{
+                    padding: 12,
+                    border: '1px solid #222',
+                    borderRadius: 12,
+                    background: '#151515',
+                }}
+            >
+                {/* HEADER: author • date • time  + optional owner menu */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ fontWeight: 600 }}>
+                        {comment.author?.name || comment.author?.login || comment.author?.fullName || comment.author?.username || comment.author?.email || 'user'}
+                    </div>
+                    <div style={{ opacity: .8 }}>•</div>
+                    <div style={{ fontSize: 13, opacity: .9 }}>{dateStr} {timeStr && <>• {timeStr}</>}</div>
+
+                    {isMine && (
+                        <div ref={menuRef} style={{ marginLeft: 'auto', position: 'relative' }}>
+                            <button
+                                aria-haspopup="menu"
+                                aria-expanded={menuOpen}
+                                title="Options"
+                                onClick={() => setMenuOpen((v) => !v)}
+                                style={{
+                                    width: 32, height: 32, borderRadius: 8,
+                                    border: '1px solid #2c2c2c', background: '#111', color: '#f5f5f5', cursor: 'pointer',
+                                }}
+                            >
+                                {'\u22EE'}
+                            </button>
+                            {menuOpen && (
+                                <div
+                                    role="menu"
+                                    style={{
+                                        position: 'absolute', right: 0, marginTop: 6, minWidth: 140,
+                                        background: '#111', border: '1px solid #2c2c2c', borderRadius: 10,
+                                        boxShadow: '0 6px 26px rgba(0,0,0,.35)', overflow: 'hidden', zIndex: 10,
+                                    }}
+                                >
+                                    <button
+                                        role="menuitem"
+                                        onClick={() => { setMenuOpen(false); onDelete(); }}
+                                        className="btn btn--ghost"
+                                        style={{ display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px' }}
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     )}
                 </div>
+
+                {/* BODY: comment text */}
+                <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.5, marginTop: 8 }}>
+                    {comment.content}
+                </div>
+
+                {/* FOOTER: reactions (left) + Reply (right) */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                    <button
+                        aria-pressed={likeActive}
+                        onClick={onLike}
+                        title={likeActive ? 'Remove like' : 'Like'}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 8, border: '1px solid #3a3a3a' }}
+                    >
+                        {likeActive ? <AiFillLike /> : <AiOutlineLike />} {comment.likesCount ?? 0}
+                    </button>
+
+                    <button
+                        aria-pressed={dislikeActive}
+                        onClick={onDislike}
+                        title={dislikeActive ? 'Remove dislike' : 'Dislike'}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 8, border: '1px solid #3a3a3a' }}
+                    >
+                        {dislikeActive ? <AiFillDislike /> : <AiOutlineDislike />} {comment.dislikesCount ?? 0}
+                    </button>
+
+                    <div style={{ marginLeft: 'auto' }}>
+                        {depth + 1 < maxDepth && (
+                            <button onClick={onReply} className="btn btn--ghost" style={{ padding: '6px 10px' }}>Reply</button>
+                        )}
+                    </div>
+                </div>
+
+                {/* Reply editor (appears only after clicking Reply) */}
+                {replyDraftOpen && (
+                    <form onSubmit={onSubmitReply} style={{ marginTop: 10 }}>
+                        <textarea
+                            rows={3}
+                            placeholder="Write a reply…"
+                            value={replyText}
+                            onChange={(e) => setReplyText(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Escape') onCancelReply();
+                                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) onSubmitReply(e);
+                            }}
+                            style={{
+                                width: '100%', background: '#1e1e1e', color: '#f5f5f5', border: '1px solid #2c2c2c',
+                                padding: 10, borderRadius: 8, resize: 'vertical',
+                            }}
+                        />
+                        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 8 }}>
+                            <button type="button" onClick={onCancelReply} className="btn btn--secondary">Cancel</button>
+                            <button type="submit" disabled={!replyText.trim()} className="btn btn--primary">Comment</button>
+                        </div>
+                    </form>
+                )}
             </div>
 
-            {/* content */}
-            <div style={{ whiteSpace: 'pre-wrap', marginTop: 4 }}>{comment.content}</div>
-
-            {/* reply form */}
-            {open && (
-                <form onSubmit={onReply} style={{ marginTop: 8 }}>
-                    <textarea
-                        value={draft}
-                        onChange={e => setDraft(e.target.value)}
-                        placeholder="Write a reply..."
-                        style={{ width: '100%', background: '#1e1e1e', color: '#f5f5f5', border: '1px solid #333', borderRadius: 8, padding: 8 }}
-                    />
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 8 }}>
-                        <button type="button" className="btn btn--ghost" onClick={() => setDraft('')}>Clear</button>
-                        <button type="submit" className="btn">Reply</button>
-                    </div>
-                </form>
+            {/* Replies toggle & list */}
+            {repliesTotal > 0 && (
+                <div style={{ marginTop: 10 }}>
+                    <button
+                        onClick={() => setRepliesOpen((v) => !v)}
+                        className="btn btn--ghost"
+                        style={{ padding: '6px 10px' }}
+                    >
+                        {repliesOpen ? 'Hide replies' : `View replies (${repliesTotal})`}
+                    </button>
+                </div>
             )}
 
-            {/* children */}
-            {open && (
-                <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-                    {children
-                        .filter(c => c && (c.id !== undefined && c.id !== null))
-                        .map(child => (
-                            <CommentNode
-                                key={child.id}
-                                postId={postId}
-                                comment={child}
-                                depth={depth + 1}
-                                maxDepth={maxDepth}
-                            />
-                        ))}
+            {repliesOpen && (
+                <ul style={{ listStyle: 'none', padding: 0, margin: '8px 0 0 12px', display: 'grid', gap: 10 }}>
+                    {children.map((child) => (
+                        <CommentNode
+                            key={child.id}
+                            postId={postId}
+                            comment={child}
+                            depth={depth + 1}
+                            maxDepth={maxDepth}
+                        />
+                    ))}
 
                     {hasMore && (
                         <li>
                             <button
                                 className="btn btn--ghost"
-                                onClick={() => dispatch(fetchRepliesByComment({
-                                    postId,
-                                    commentId: comment.id,
-                                    page: (repliesBucket?.page || 1) + 1,
-                                    limit: repliesBucket?.limit || 20,
-                                }))}
+                                style={{ padding: '6px 10px' }}
+                                onClick={() =>
+                                    dispatch(
+                                        fetchRepliesByComment({
+                                            postId,
+                                            commentId: comment.id,
+                                            page: (repliesBucket?.page || 1) + 1,
+                                            limit: repliesBucket?.limit || 20,
+                                        })
+                                    )
+                                }
                             >
                                 Load more replies
                             </button>
