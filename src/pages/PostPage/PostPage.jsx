@@ -61,8 +61,9 @@ export default function PostPage() {
     }, []);
 
     const onDelete = async () => {
+        setMenuOpen(false);
         if (!token) { navigate('/login'); return; }
-        if (!isOwner) return;
+        if (!canManage) return;
         if (!window.confirm('Delete this post? This cannot be undone.')) return;
         const res = await dispatch(deletePost(postId));
         if (deletePost.fulfilled.match(res)) {
