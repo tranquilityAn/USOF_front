@@ -19,7 +19,6 @@ export default function PostPage() {
 
     const { current: post, currentLoading, currentError, myReactionByPost, deleteLoading, deleteError } = useSelector(s => s.posts);
     const myReaction = myReactionByPost?.[postId] ?? null;
-    // const { byPost, repliesByComment, loading: commentsLoading, myReactionByComment } = useSelector(s => s.comments);
     const { byPost, loading: commentsLoading } = useSelector(s => s.comments);
     const comments = byPost[postId] || [];
     const auth = useSelector(s => s.auth);
@@ -35,6 +34,8 @@ export default function PostPage() {
     const menuRef = useRef(null);
 
     const isOwner = !!(post?.author?.id && user?.id && post.author.id === user.id);
+    const isAdmin = user?.role === 'admin';
+    const canManage = isOwner || isAdmin;
 
     const onToggleFav = () => {
         if (requireAuth()) return;
@@ -109,7 +110,7 @@ export default function PostPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <h1 style={{ marginBottom: 4, marginRight: 'auto' }}>{post.title}</h1>
 
-                {isOwner && (
+                {canManage && (
                     <div ref={menuRef} style={{ position: 'relative' }}>
                         <button
                             aria-haspopup="menu"

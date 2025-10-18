@@ -14,10 +14,12 @@ export default function EditPostPage() {
     const { items: categories } = useSelector(s => s.categories);
     const { current: post, updateLoading, updateError } = useSelector(s => s.posts);
     const { user, token } = useSelector(s => s.auth);
+    const isAdmin = user?.role === 'admin';
 
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [selected, setSelected] = useState([]); // number[]
+    const [status, setStatus] = useState('active'); // 'active' | 'inactive'
 
     // preload
     useEffect(() => {
@@ -29,30 +31,35 @@ export default function EditPostPage() {
         dispatch(fetchPostById(postId));
     }, [postId, dispatch]);
 
-    // fill inputs
     useEffect(() => {
         if (!post || post.id !== postId) return;
         setTitle(post.title ?? '');
         setContent(post.content ?? '');
         const catIds = (post.categories || []).map(c => c.id);
         setSelected(catIds);
+        if (post.status) setStatus(post.status); // наповнюємо статус
     }, [post, postId]);
 
-    // only author cat edit
     useEffect(() => {
         if (!token || !post) return;
         const isOwner = post?.author?.id === user?.id;
-        if (post && token && isOwner === false) {
+        if (!isOwner && !isAdmin) {
             navigate(`/post/${postId}`);
         }
-    }, [token, user?.id, post, navigate, postId]);
+    }, [token, user?.id, post, isAdmin, navigate, postId]);
 
-    const canSubmit = title.trim() && content.trim() && selected.length;
+    const isOwner = post?.author?.id === user?.id;
+    const canSubmit = isOwner
+        ? (title.trim() && content.trim() && selected.length)
+        : (isAdmin && selected.length && (status === 'active' || status === 'inactive'));
 
     const onSubmit = async (e) => {
         e.preventDefault();
         if (!canSubmit) return;
-        const resAction = await dispatch(updatePost({ id: postId, title, content, categories: selected }));
+        const payload = isOwner
+            ? { id: postId, title, content, categories: selected }
+            : { id: postId, categories: selected, status };
+        const resAction = await dispatch(updatePost(payload));
         if (updatePost.fulfilled.match(resAction)) {
             navigate(`/post/${postId}`);
         }
@@ -70,6 +77,8 @@ export default function EditPostPage() {
                     <input
                         value={title}
                         onChange={e => setTitle(e.target.value)}
+                        readOnly={!isOwner}
+                        disabled={!isOwner}
                         placeholder="Post title"
                         style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #2c2c2c', background: '#111', color: '#f5f5f5' }}
                     />
@@ -80,6 +89,8 @@ export default function EditPostPage() {
                     <textarea
                         value={content}
                         onChange={e => setContent(e.target.value)}
+                        readOnly={!isOwner}
+                        disabled={!isOwner}
                         placeholder="Write your content…"
                         rows={12}
                         style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #2c2c2c', background: '#111', color: '#f5f5f5' }}
@@ -95,6 +106,43 @@ export default function EditPostPage() {
                         disabled={!categories?.length}
                     />
                 </div>
+
+                {/* Status toggle — only for admins */}
+                {isAdmin && !isOwner && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <span>Status:</span>
+                        <button
+                            type="button"
+                            onClick={() => setStatus(status === 'active' ? 'inactive' : 'active')}
+                            style={{
+                                position: 'relative',
+                                width: 48,
+                                height: 26,
+                                borderRadius: 20,
+                                border: '1px solid #333',
+                                background: status === 'active' ? '#4caf50' : '#777',
+                                transition: 'background 0.25s',
+                                cursor: 'pointer',
+                            }}
+                        >
+                            <span
+                                style={{
+                                    position: 'absolute',
+                                    top: 2,
+                                    left: status === 'active' ? 24 : 2,
+                                    width: 20,
+                                    height: 20,
+                                    borderRadius: '50%',
+                                    background: '#fff',
+                                    transition: 'left 0.25s',
+                                }}
+                            />
+                        </button>
+                        <span style={{ color: status === 'active' ? '#4caf50' : '#aaa' }}>
+                            {status === 'active' ? 'Active' : 'Inactive'}
+                        </span>
+                    </div>
+                )}
 
                 {updateError && <div style={{ color: 'tomato' }}>Error: {updateError}</div>}
 

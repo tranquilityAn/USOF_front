@@ -46,9 +46,8 @@ export const createPostRequest = async ({ title, content, categories }) => {
     return data; // Created Post
 };
 
-// update own post
+// update post (owner: title/content/categories; admin: categories/status/…)
 export const updatePostRequest = async (id, payload) => {
-    // payload: { title?, content?, categories? }
     const { data } = await api.patch(`/posts/${id}`, payload);
     return data; // Updated Post
 };

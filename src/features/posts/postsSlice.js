@@ -88,9 +88,10 @@ export const createPost = createAsyncThunk(
 
 export const updatePost = createAsyncThunk(
     'posts/update',
-    async ({ id, title, content, categories }, { rejectWithValue }) => {
+    async (payload, { rejectWithValue }) => {
         try {
-            const updated = await updatePostRequest(id, { title, content, categories });
+            const { id, ...data } = payload || {};
+            const updated = await updatePostRequest(id, data);
             return updated;
         } catch (err) {
             const msg = err?.response?.data?.message || 'Failed to update post';
