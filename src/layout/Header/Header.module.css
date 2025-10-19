@@ -9,7 +9,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: var(--gap);
 }
 
 .brand {
@@ -17,21 +17,25 @@
     font-weight: bold;
     color: #ffffff;
     text-decoration: none;
+    flex: 0 0 auto;
 }
 
 .search {
-    flex: 1;
-    margin: 0 16px;
+    flex: 1 1 280px;
+    min-width: 200px;
+    margin: 0 var(--gap);
 }
 
 .search input {
     width: 100%;
-    padding: 0.5rem 0.75rem;
-    border-radius: 8px;
+    height: var(--control-h);
+    padding: 0 12px;
+    border-radius: var(--control-radius);
     border: 1px solid #333;
     background-color: #1e1e1e;
     color: #f5f5f5;
     outline: none;
+    line-height: 1;
 }
 
 .search input:focus {
@@ -41,7 +45,8 @@
 .userBlock {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--gap);
+    flex: 0 0 auto;
 }
 
 .userLink {
@@ -55,12 +60,14 @@
     text-decoration: underline;
 }
 
-/* .avatar {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: #333;
-} */
+:global(.btn) {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: var(--control-h);
+    padding: 0 12px;
+    border-radius: var(--control-radius);
+}
 
 .button {
     padding: 6px 12px;
@@ -85,7 +92,9 @@
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    padding: 6px 10px;
+    height: calc(var(--avatar-size) + (var(--avatar-border) * 2));
+    line-height: 1;
+    padding: 0 12px;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 10px;
@@ -150,10 +159,51 @@
 }
 
 .avatar {
-    width: 28px;
-    height: 28px;
+    width: var(--avatar-size);
+    height: var(--avatar-size);
     border-radius: 999px;
     background: #222a33;
-    border: 1px solid var(--border);
+    border: var(--avatar-border) solid var(--border);
     object-fit: cover;
+    display: block;
+}
+
+:root {
+    --gap: 12px;
+    --control-h: 40px;
+    --control-radius: 10px;
+    --avatar-size: 40px;
+    --avatar-border: 2px;
+}
+
+@media (max-width: 600px) {
+    :root {
+        --gap: 8px;
+        --control-h: 34px;
+        --avatar-size: 34px;
+    }
+
+    .search {
+        flex: 1 1 160px;
+        min-width: 140px;
+        margin: 0 8px;
+    }
+
+    .userHandle {
+        display: none;
+    }
+
+    .btnLabel {
+        display: none;
+    }
+
+    :global(.btn) {
+        gap: 6px;
+        padding: 0 10px;
+    }
+
+    .dropdownToggle {
+        gap: 8px;
+        padding: 0 10px;
+    }
 }
