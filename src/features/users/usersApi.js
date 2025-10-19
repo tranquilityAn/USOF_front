@@ -37,3 +37,9 @@ export const deleteAccountByIdRequest = async (id) => {
     const { data } = await api.delete(`/users/${id}`);
     return data; // 200 OK
 };
+
+// POST /users  (admin only)
+export const createUserRequest = async (payload) => {
+    const { data } = await api.post('/users', payload);
+    return data;
+};

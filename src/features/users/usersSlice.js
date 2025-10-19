@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { updateUserRequest, uploadAvatarRequest, removeAvatarRequest, requestPasswordReset, deleteAccountByIdRequest } from './usersApi';
+import { updateUserRequest, uploadAvatarRequest, removeAvatarRequest, requestPasswordReset, deleteAccountByIdRequest, createUserRequest } from './usersApi';
 import { meRequest } from '../auth/authApi';
 import { logout } from '../auth/authSlice';
 
@@ -70,6 +70,21 @@ export const deleteMyAccount = createAsyncThunk(
     }
 );
 
+export const createUser = createAsyncThunk(
+    'users/createUser',
+    async (payload, { rejectWithValue }) => {
+        try {
+            const created = await createUserRequest(payload);
+            return created || null; // якщо бек нічого не повернув
+        } catch (err) {
+            const msg = err?.response?.data?.message
+                || err?.response?.data?.error
+                || 'Failed to create user';
+            return rejectWithValue(msg);
+        }
+    }
+);
+
 const profileSlice = createSlice({
     name: 'users',
     initialState: {
@@ -77,12 +92,20 @@ const profileSlice = createSlice({
         profile: { saving: false, error: null, success: false },
         avatar: { pending: false, error: null, success: false },
         password: { pending: false, error: null, sent: false },
+        createUserLoading: false,
+        createUserError: null,
+        createdUser: null,
     },
     reducers: {
         setMe(state, action) { state.me = action.payload; },
         clearProfileStatus(state) { state.profile = { saving: false, error: null, success: false }; },
         clearAvatarStatus(state) { state.avatar = { pending: false, error: null, success: false }; },
         clearPasswordStatus(state) { state.password = { pending: false, error: null, sent: false }; },
+        clearCreateUserStatus(state) {
+            state.createUserLoading = false;
+            state.createUserError = null;
+            state.createdUser = null;
+        },
     },
     extraReducers: (b) => {
         // PROFILE
@@ -121,9 +144,22 @@ const profileSlice = createSlice({
                 s.profile.deleting = false;
                 s.profile.deleteError = a.payload || 'Failed to delete account';
                 s.profile.deleteSuccess = false;
+            })
+            .addCase(createUser.pending, (state) => {
+                state.createUserLoading = true;
+                state.createUserError = null;
+                state.createdUser = null;
+            })
+            .addCase(createUser.fulfilled, (state, action) => {
+                state.createUserLoading = false;
+                state.createdUser = action.payload; // може бути null, якщо бек не поверне body
+            })
+            .addCase(createUser.rejected, (state, action) => {
+                state.createUserLoading = false;
+                state.createUserError = action.payload || 'Failed to create user';
             });
     }
 });
 
 export default profileSlice.reducer;
-export const { setMe, clearProfileStatus, clearAvatarStatus, clearPasswordStatus } = profileSlice.actions;
+export const { setMe, clearProfileStatus, clearAvatarStatus, clearPasswordStatus, clearCreateUserStatus } = profileSlice.actions;

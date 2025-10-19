@@ -118,6 +118,9 @@ export default function Header() {
                                                     <AiOutlineHeart />
                                                     Favorites
                                                 </Link>
+                                                {user?.role === 'admin' && (
+                                                    <Link to="/admin/users/new">New user</Link>
+                                                )}
 
                                                 {/* Settings */}
                                                 <Link
