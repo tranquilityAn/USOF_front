@@ -31,3 +31,9 @@ export const requestPasswordReset = async (email) => {
     const { data } = await api.post('/auth/password-reset', { email });
     return data; // 200 OK
 };
+
+// DELETE /users/{id}
+export const deleteAccountByIdRequest = async (id) => {
+    const { data } = await api.delete(`/users/${id}`);
+    return data; // 200 OK
+};

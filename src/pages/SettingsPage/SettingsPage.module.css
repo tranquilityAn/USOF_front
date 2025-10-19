@@ -143,3 +143,55 @@
         height: 84px;
     }
 }
+
+.dangerBox {
+    margin-top: 32px;
+    padding: 16px;
+    border: 1px solid #4a1f1f;
+    background: #190b0b;
+    border-radius: 16px;
+}
+
+.dangerTitle {
+    margin: 0 0 8px 0;
+    color: #ff6b6b;
+    font-size: 18px;
+}
+
+.dangerText {
+    margin: 0 0 12px 0;
+    color: #ffb3b3;
+}
+
+.confirmField {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 12px 0;
+}
+
+.actionsRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dangerBtn {
+    appearance: none;
+    border: 1px solid #ff4d4f;
+    background: #b30000;
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.dangerBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.dangerBtn:hover:not(:disabled) {
+    filter: brightness(1.05);
+}

@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { updateUserRequest, uploadAvatarRequest, removeAvatarRequest, requestPasswordReset } from './usersApi';
+import { updateUserRequest, uploadAvatarRequest, removeAvatarRequest, requestPasswordReset, deleteAccountByIdRequest } from './usersApi';
 import { meRequest } from '../auth/authApi';
+import { logout } from '../auth/authSlice';
 
 export const updateMyProfile = createAsyncThunk(
     'users/updateMyProfile',
@@ -55,6 +56,20 @@ export const sendPasswordReset = createAsyncThunk(
     }
 );
 
+export const deleteMyAccount = createAsyncThunk(
+    'users/deleteMyAccount',
+    async ({ id } = {}, { dispatch, rejectWithValue }) => {
+        try {
+            await deleteAccountByIdRequest();
+            dispatch(logout());
+            return true;
+        } catch (err) {
+            const msg = err?.response?.data?.message || 'Failed to delete account';
+            return rejectWithValue(msg);
+        }
+    }
+);
+
 const profileSlice = createSlice({
     name: 'users',
     initialState: {
@@ -88,7 +103,25 @@ const profileSlice = createSlice({
             // PASSWORD RESET
             .addCase(sendPasswordReset.pending, (s) => { s.password.pending = true; s.password.sent = false; s.password.error = null; })
             .addCase(sendPasswordReset.fulfilled, (s) => { s.password.pending = false; s.password.sent = true; })
-            .addCase(sendPasswordReset.rejected, (s, a) => { s.password.pending = false; s.password.error = a.payload; });
+            .addCase(sendPasswordReset.rejected, (s, a) => { s.password.pending = false; s.password.error = a.payload; })
+
+            // DELETE ACCOUNT
+            .addCase(deleteMyAccount.pending, (s) => {
+                s.profile = s.profile || {};
+                s.profile.deleting = true;
+                s.profile.deleteError = null;
+                s.profile.deleteSuccess = false;
+            })
+            .addCase(deleteMyAccount.fulfilled, (s) => {
+                s.profile.deleting = false;
+                s.profile.deleteSuccess = true;
+                s.me = null;
+            })
+            .addCase(deleteMyAccount.rejected, (s, a) => {
+                s.profile.deleting = false;
+                s.profile.deleteError = a.payload || 'Failed to delete account';
+                s.profile.deleteSuccess = false;
+            });
     }
 });
 

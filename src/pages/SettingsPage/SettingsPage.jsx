@@ -9,7 +9,8 @@ import {
     sendPasswordReset,
     clearProfileStatus,
     clearAvatarStatus,
-    clearPasswordStatus
+    clearPasswordStatus,
+    deleteMyAccount,
 } from '../../features/users/usersSlice';
 import { fetchMe } from '../../features/auth/authSlice';
 import styles from './SettingsPage.module.css';
@@ -31,6 +32,13 @@ export default function SettingsPage() {
         [me?.profilePicture]
     );
 
+    const [confirmInput, setConfirmInput] = useState('');
+    const canDelete = confirmInput.trim().toUpperCase() === 'DELETE';
+
+    const deleting = usersState?.profile?.deleting;
+    const deleteError = usersState?.profile?.deleteError;
+    const deleteSuccess = usersState?.profile?.deleteSuccess;
+
     useEffect(() => {
         if (!token) { navigate('/login'); return; }
         if (!me && authUser?.id) dispatch(fetchMe(authUser.id));
@@ -43,6 +51,13 @@ export default function SettingsPage() {
             setEmailForReset(me.email || '');
         }
     }, [me]);
+
+    useEffect(() => {
+        if (deleteSuccess) {
+            // після видалення — на головну
+            navigate('/');
+        }
+    }, [deleteSuccess, navigate]);
 
     if (!token) return null;
 
@@ -72,6 +87,21 @@ export default function SettingsPage() {
         if (!emailForReset) return;
         dispatch(clearPasswordStatus());
         dispatch(sendPasswordReset(emailForReset));
+    };
+
+    const handleDeleteAccount = async () => {
+        // додатковий native confirm — на випадок якщо користувач натиснув випадково
+        if (!canDelete) return;
+        const ok = window.confirm(
+            'Це безповоротно видалить ваш профіль, усі пости, коментарі та повʼязані дані (якщо політика бекенду не передбачає soft-delete). Продовжити?'
+        );
+        if (!ok) return;
+
+        // якщо бекенд — /users/me:
+        await dispatch(deleteMyAccount({}));
+
+        // якщо бекенд — /users/{id}:
+        // await dispatch(deleteMyAccount({ id: me?.id }));
     };
 
     return (
@@ -157,6 +187,41 @@ export default function SettingsPage() {
                     {usersState.password.error && <span className={styles.statusErr}>{usersState.password.error}</span>}
                 </div>
             </form>
+
+            {/* DANGER ZONE */}
+            <section className={styles.dangerBox} aria-labelledby="danger-title">
+                <h2 id="danger-title" className={styles.dangerTitle}>Danger zone</h2>
+
+                <p className={styles.dangerText}>
+                    Deleting your account is a <strong>permanent action</strong>. Your profile, posts, comments,
+                    and all associated data will be permanently removed and <strong>cannot be recovered</strong>.
+                </p>
+
+                <label className={styles.confirmField}>
+                    <span>To confirm, please type <code>DELETE</code> below:</span>
+                    <input
+                        type="text"
+                        value={confirmInput}
+                        onChange={(e) => setConfirmInput(e.target.value)}
+                        placeholder="DELETE"
+                        className={styles.input}
+                    />
+                </label>
+
+                <div className={styles.actionsRow}>
+                    <button
+                        type="button"
+                        className={styles.dangerBtn}
+                        disabled={!canDelete || deleting}
+                        onClick={handleDeleteAccount}
+                        title="Permanently delete your account"
+                    >
+                        {deleting ? 'Deleting…' : 'Delete account'}
+                    </button>
+
+                    {deleteError && <span className={styles.statusErr}>{deleteError}</span>}
+                </div>
+            </section>
         </div>
     );
 }
