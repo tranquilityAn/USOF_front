@@ -9,6 +9,7 @@ import { IoSettingsOutline } from "react-icons/io5";
 import { RxExit } from "react-icons/rx";
 import { IoCreateOutline } from "react-icons/io5";
 import { getAvatarUrl } from '../../utils/getAvatarUrl';
+import { IoPersonAddOutline } from "react-icons/io5";
 
 export default function Header() {
     const navigate = useNavigate();
@@ -119,7 +120,13 @@ export default function Header() {
                                                     Favorites
                                                 </Link>
                                                 {user?.role === 'admin' && (
-                                                    <Link to="/admin/users/new">New user</Link>
+                                                    <Link to='/admin/users/new'
+                                                        className={styles.dropdownItem}
+                                                        role='menuitem'
+                                                        onClick={closeDropdown}
+                                                    >
+                                                        <IoPersonAddOutline />
+                                                        Create user</Link>
                                                 )}
 
                                                 {/* Settings */}
