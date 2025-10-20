@@ -5,15 +5,18 @@ import {
     deleteComment,
     toggleCommentReaction,
     fetchRepliesByComment,
+    toggleCommentStatus
 } from '../../features/comments/commentsSlice';
 import { AiOutlineLike, AiFillLike, AiOutlineDislike, AiFillDislike } from 'react-icons/ai';
 
 export default function CommentNode({ postId, comment, depth = 0, maxDepth = 50 }) {
     const dispatch = useDispatch();
     const { user: me } = useSelector((s) => s.auth);
-    const repliesBucket = useSelector((s) => s.comments.repliesByComment[comment.id]);
-
+    const isAdmin = me?.role === 'admin';
     const isMine = !!(me?.id && (comment.author?.id === me.id || comment.userId === me.id || comment.authorId === me.id));
+    const canManage = isMine || isAdmin;
+
+    const repliesBucket = useSelector((s) => s.comments.repliesByComment[comment.id]);
 
     const myCommentReaction = useSelector((s) => s.comments?.myReactionByComment?.[comment.id] ?? comment.myReaction ?? null);
     const likeActive = myCommentReaction === 'like';
@@ -26,10 +29,30 @@ export default function CommentNode({ postId, comment, depth = 0, maxDepth = 50 
 
     const menuRef = useRef(null);
 
-    // total replies preferring bucket.total -> fallback to comment.replyCount
     const repliesTotal = repliesBucket?.total ?? comment.replyCount ?? 0;
     const children = repliesBucket?.items || [];
     const hasMore = (repliesBucket?.items?.length || 0) < (repliesBucket?.total || 0);
+
+    const liveStatus = useSelector(s => {
+        const fromArr = (arr) => {
+            const it = arr?.find(c => c.id === comment.id);
+            if (!it) return undefined;
+            if (typeof it.status === 'string') return it.status;
+            if (typeof it.isActive === 'boolean') return it.isActive ? 'active' : 'inactive';
+            return undefined;
+        };
+
+        const top = fromArr(s.comments.byPost?.[postId]);
+        if (top) return top;
+        for (const k in (s.comments.repliesByComment || {})) {
+            const bucket = s.comments.repliesByComment[k]?.items;
+            const v = fromArr(bucket);
+            if (v) return v;
+        }
+        if (typeof comment.status === 'string') return comment.status;
+        if (typeof comment.isActive === 'boolean') return comment.isActive ? 'active' : 'inactive';
+        return undefined;
+    });
 
     // close menu on outside click
     useEffect(() => {
@@ -87,6 +110,16 @@ export default function CommentNode({ postId, comment, depth = 0, maxDepth = 50 
         }
     };
 
+    const onToggleStatus = async () => {
+        const curr = (liveStatus === 'active' || liveStatus === 'inactive') ? liveStatus : 'active';
+        const next = curr === 'active' ? 'inactive' : 'active';
+        try {
+            await dispatch(toggleCommentStatus({ commentId: comment.id, nextStatus: next })).unwrap();
+            setMenuOpen(false);
+        } catch (err) {
+            console.error('Failed to toggle status', err);
+        }
+    };
 
     // util: format date/time from createdAt/updatedAt
     const dt = new Date(comment.createdAt || comment.updatedAt || Date.now());
@@ -95,6 +128,8 @@ export default function CommentNode({ postId, comment, depth = 0, maxDepth = 50 
 
     return (
         <li style={{
+            opacity: liveStatus === 'inactive' ? 0.6 : 1,
+            pointerEvents: 'auto',
             marginLeft: depth ? 16 : 0,
             listStyle: 'none',
         }}>
@@ -112,16 +147,24 @@ export default function CommentNode({ postId, comment, depth = 0, maxDepth = 50 
                     <div style={{ fontWeight: 600 }}>
                         {comment.author?.name || comment.author?.login || comment.author?.fullName || comment.author?.username || comment.author?.email || 'user'}
                     </div>
+
+                    {/* Inactive */}
+                    {liveStatus === 'inactive' && (
+                        <span style={{ fontSize: 12, padding: '2px 6px', border: '1px solid #444', borderRadius: 6, textTransform: 'uppercase' }}>
+                            Inactive
+                        </span>
+                    )}
+
                     <div style={{ opacity: .8 }}>•</div>
                     <div style={{ fontSize: 13, opacity: .9 }}>{dateStr} {timeStr && <>• {timeStr}</>}</div>
 
-                    {isMine && (
-                        <div ref={menuRef} style={{ marginLeft: 'auto', position: 'relative' }}>
+                    {canManage && (
+                        <div ref={menuRef} style={{ position: 'relative' }}>
                             <button
                                 aria-haspopup="menu"
                                 aria-expanded={menuOpen}
+                                onClick={() => setMenuOpen(v => !v)}
                                 title="Options"
-                                onClick={() => setMenuOpen((v) => !v)}
                                 style={{
                                     width: 32, height: 32, borderRadius: 8,
                                     border: '1px solid #2c2c2c', background: '#111', color: '#f5f5f5', cursor: 'pointer',
@@ -129,15 +172,26 @@ export default function CommentNode({ postId, comment, depth = 0, maxDepth = 50 
                             >
                                 {'\u22EE'}
                             </button>
+
                             {menuOpen && (
                                 <div
                                     role="menu"
                                     style={{
-                                        position: 'absolute', right: 0, marginTop: 6, minWidth: 140,
+                                        position: 'absolute', right: 0, marginTop: 6, minWidth: 160,
                                         background: '#111', border: '1px solid #2c2c2c', borderRadius: 10,
                                         boxShadow: '0 6px 26px rgba(0,0,0,.35)', overflow: 'hidden', zIndex: 10,
                                     }}
                                 >
+                                    {/* toggle status — for owner and admin */}
+                                    <button
+                                        role="menuitem"
+                                        onClick={() => { setMenuOpen(false); onToggleStatus(); }}
+                                        className="btn btn--ghost"
+                                        style={{ display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px' }}
+                                    >
+                                        {liveStatus === 'inactive' ? 'Activate' : 'Inactivate'}
+                                    </button>
+
                                     <button
                                         role="menuitem"
                                         onClick={() => { setMenuOpen(false); onDelete(); }}

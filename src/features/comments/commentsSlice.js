@@ -6,7 +6,8 @@ import {
     deleteCommentRequest,
     reactToCommentRequest,
     removeCommentReactionRequest,
-    fetchRepliesByCommentRequest
+    fetchRepliesByCommentRequest,
+    updateCommentStatusRequest
 } from './commentsApi';
 import { fetchUserByIdRequest } from '../authors/authorsApi';
 
@@ -163,6 +164,52 @@ export const removeCommentReaction = createAsyncThunk('comments/removeReact', as
     }
 });
 
+export const toggleCommentStatus = createAsyncThunk(
+    'comments/toggleStatus',
+    async ({ commentId, nextStatus }, { rejectWithValue }) => {
+        try {
+            // має повертати { id, ..., status: 'active'|'inactive' }
+            const updated = await updateCommentStatusRequest(commentId, nextStatus);
+            return updated;
+        } catch (err) {
+            return rejectWithValue(err?.response?.data?.message || 'Failed to update comment status');
+        }
+    }
+);
+
+function patchCommentEverywhereImmutable(state, commentId, patch) {
+    for (const postId of Object.keys(state.byPost)) {
+        const arr = state.byPost[postId] || [];
+        const idx = arr.findIndex(c => c.id === commentId);
+        if (idx !== -1) {
+            const updatedItem = { ...arr[idx], ...patch };
+            state.byPost[postId] = [
+                ...arr.slice(0, idx),
+                updatedItem,
+                ...arr.slice(idx + 1),
+            ];
+        }
+    }
+
+    for (const parentId of Object.keys(state.repliesByComment)) {
+        const bucket = state.repliesByComment[parentId];
+        if (!bucket?.items) continue;
+        const arr = bucket.items;
+        const idx = arr.findIndex(c => c.id === commentId);
+        if (idx !== -1) {
+            const updatedItem = { ...arr[idx], ...patch };
+            state.repliesByComment[parentId] = {
+                ...bucket,
+                items: [
+                    ...arr.slice(0, idx),
+                    updatedItem,
+                    ...arr.slice(idx + 1),
+                ],
+            };
+        }
+    }
+}
+
 const commentsSlice = createSlice({
     name: 'comments',
     initialState: { byPost: {}, repliesByComment: {}, loading: false, error: null, myReactionByComment: {} },
@@ -292,6 +339,20 @@ const commentsSlice = createSlice({
             s.repliesByComment[commentId].loading = false;
             s.repliesByComment[commentId].error = payload || 'Error';
         });
+        // toggle status
+        b.addCase(toggleCommentStatus.pending, (s) => { s.error = null; });
+        b.addCase(toggleCommentStatus.fulfilled, (s, { payload }) => {
+            const status =
+                payload && typeof payload.status === 'string'
+                    ? payload.status
+                    : (typeof payload?.isActive === 'boolean'
+                        ? (payload.isActive ? 'active' : 'inactive')
+                        : undefined);
+            if (payload?.id && typeof status === 'string') {
+                patchCommentEverywhereImmutable(s, payload.id, { status });
+            }
+        });
+        b.addCase(toggleCommentStatus.rejected, (s, a) => { s.error = a.payload || 'Failed to update comment status'; });
 
     },
 });

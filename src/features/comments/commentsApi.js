@@ -41,9 +41,13 @@ export const unlikeCommentRequest = async (commentId) => {
     return data; // { liked:false, ... }
 };
 
-
 // прибрати свою реакцію з комента
 export const removeCommentReactionRequest = async (commentId) => {
     const { data } = await api.delete(`/comments/${commentId}/like`);
+    return data;
+};
+
+export const updateCommentStatusRequest = async (commentId, status /* 'active'|'inactive' */) => {
+    const { data } = await api.patch(`/comments/${commentId}`, { status });
     return data;
 };
