@@ -11,6 +11,7 @@ import {
     clearAvatarStatus,
     clearPasswordStatus,
     deleteMyAccount,
+    clearDeleteStatus
 } from '../../features/users/usersSlice';
 import { fetchMe } from '../../features/auth/authSlice';
 import styles from './SettingsPage.module.css';
@@ -38,6 +39,13 @@ export default function SettingsPage() {
     const deleting = usersState?.profile?.deleting;
     const deleteError = usersState?.profile?.deleteError;
     const deleteSuccess = usersState?.profile?.deleteSuccess;
+
+    useEffect(() => {
+        dispatch(clearDeleteStatus());
+        dispatch(clearProfileStatus());
+        dispatch(clearAvatarStatus());
+        dispatch(clearPasswordStatus());
+    }, [dispatch]);
 
     useEffect(() => {
         if (!token) { navigate('/login'); return; }

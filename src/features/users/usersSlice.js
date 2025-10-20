@@ -99,6 +99,9 @@ const profileSlice = createSlice({
         createUserLoading: false,
         createUserError: null,
         createdUser: null,
+        deleting: false,
+        deleteError: null,
+        deleteSuccess: false,
     },
     reducers: {
         setMe(state, action) { state.me = action.payload; },
@@ -109,6 +112,11 @@ const profileSlice = createSlice({
             state.createUserLoading = false;
             state.createUserError = null;
             state.createdUser = null;
+        },
+        clearDeleteStatus(state) {
+            state.profile.deleting = false;
+            state.profile.deleteError = null;
+            state.profile.deleteSuccess = false;
         },
     },
     extraReducers: (b) => {
@@ -166,4 +174,4 @@ const profileSlice = createSlice({
 });
 
 export default profileSlice.reducer;
-export const { setMe, clearProfileStatus, clearAvatarStatus, clearPasswordStatus, clearCreateUserStatus } = profileSlice.actions;
+export const { setMe, clearProfileStatus, clearAvatarStatus, clearPasswordStatus, clearCreateUserStatus, clearDeleteStatus } = profileSlice.actions;
