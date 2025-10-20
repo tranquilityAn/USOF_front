@@ -58,13 +58,17 @@ export const sendPasswordReset = createAsyncThunk(
 
 export const deleteMyAccount = createAsyncThunk(
     'users/deleteMyAccount',
-    async ({ id } = {}, { dispatch, rejectWithValue }) => {
+    async ({ id } = {}, { getState, dispatch, rejectWithValue }) => {
         try {
-            await deleteAccountByIdRequest();
+            const state = getState();
+            const fallbackId = state?.users?.me?.id ?? state?.auth?.user?.id;
+            const targetId = id ?? fallbackId;
+            if (!targetId) throw new Error('Missing user id');
+            await deleteAccountByIdRequest(targetId);
             dispatch(logout());
             return true;
         } catch (err) {
-            const msg = err?.response?.data?.message || 'Failed to delete account';
+            const msg = err?.response?.data?.message || err.message || 'Failed to delete account';
             return rejectWithValue(msg);
         }
     }

@@ -93,15 +93,11 @@ export default function SettingsPage() {
         // додатковий native confirm — на випадок якщо користувач натиснув випадково
         if (!canDelete) return;
         const ok = window.confirm(
-            'Це безповоротно видалить ваш профіль, усі пости, коментарі та повʼязані дані (якщо політика бекенду не передбачає soft-delete). Продовжити?'
+            'This will permanently delete your profile, all posts, comments, and related data. Continue?'
         );
         if (!ok) return;
 
-        // якщо бекенд — /users/me:
-        await dispatch(deleteMyAccount({}));
-
-        // якщо бекенд — /users/{id}:
-        // await dispatch(deleteMyAccount({ id: me?.id }));
+        await dispatch(deleteMyAccount({ id: me?.id }));
     };
 
     return (
