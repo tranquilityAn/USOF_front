@@ -61,3 +61,9 @@ export const adminRemoveAvatarByIdRequest = async (id) => {
     const { data } = await api.patch(`/users/${id}`, { profilePicture: null });
     return data;
 };
+
+// GET /users/by-login/:login (public)
+export const getUserByLoginRequest = async (login) => {
+    const { data } = await api.get(`/users/by-login/${encodeURIComponent(login)}`);
+    return data;
+};

@@ -116,7 +116,6 @@ export default function UsersPage() {
                         ))}
                         {pageItems.length === 0 && (
                             <tr>
-                                {/* 7 заголовків + 1 порожній під дії = 8 колонок */}
                                 <td colSpan={8} style={{ textAlign: 'center', opacity: .7, padding: 16 }}>
                                     Nothing found
                                 </td>

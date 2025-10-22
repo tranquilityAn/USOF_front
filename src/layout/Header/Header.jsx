@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useMemo } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../features/auth/authSlice';
+import CommandSearch from '../../components/Search/CommandSearch';
 import styles from './Header.module.css';
 import { CgProfile } from 'react-icons/cg';
 import { AiOutlineHeart } from 'react-icons/ai';
@@ -9,7 +10,6 @@ import { IoSettingsOutline } from "react-icons/io5";
 import { RxExit } from "react-icons/rx";
 import { IoCreateOutline } from "react-icons/io5";
 import { getAvatarUrl } from '../../utils/getAvatarUrl';
-// import { IoPersonAddOutline } from "react-icons/io5";
 import { TbCategoryPlus } from "react-icons/tb";
 import { HiOutlineUsers } from "react-icons/hi";
 
@@ -63,9 +63,8 @@ export default function Header() {
                 {!isAuthPage && (
                     <>
                         <div className={styles.search}>
-                            <input placeholder="Search" aria-label="Search" />
+                            <CommandSearch placeholder="Go to page or @login…" />
                         </div>
-
                         <div className={styles.userBlock}>
                             {isAuth ? (
                                 <>
@@ -121,15 +120,6 @@ export default function Header() {
                                                     <AiOutlineHeart />
                                                     Favorites
                                                 </Link>
-                                                {/* {user?.role === 'admin' && (
-                                                    <Link to='/admin/users/new'
-                                                        className={styles.dropdownItem}
-                                                        role='menuitem'
-                                                        onClick={closeDropdown}
-                                                    >
-                                                        <IoPersonAddOutline />
-                                                        Create user</Link>
-                                                )} */}
 
                                                 {/* Categories */}
                                                 {user?.role === 'admin' && (
@@ -159,8 +149,6 @@ export default function Header() {
                                                         </Link>
                                                     </>
                                                 )}
-
-
 
                                                 {/* Settings */}
                                                 <Link
