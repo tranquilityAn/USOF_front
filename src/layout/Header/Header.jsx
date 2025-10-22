@@ -10,6 +10,7 @@ import { RxExit } from "react-icons/rx";
 import { IoCreateOutline } from "react-icons/io5";
 import { getAvatarUrl } from '../../utils/getAvatarUrl';
 import { IoPersonAddOutline } from "react-icons/io5";
+import { TbCategoryPlus } from "react-icons/tb";
 
 export default function Header() {
     const navigate = useNavigate();
@@ -128,6 +129,22 @@ export default function Header() {
                                                         <IoPersonAddOutline />
                                                         Create user</Link>
                                                 )}
+
+                                                {/* Categories */}
+                                                {user?.role === 'admin' && (
+                                                    <>
+                                                        <Link
+                                                            to="/admin/categories"
+                                                            className={styles.dropdownItem}
+                                                            role="menuitem"
+                                                            onClick={closeDropdown}
+                                                        >
+                                                            <TbCategoryPlus />
+                                                            Categories
+                                                        </Link>
+                                                    </>
+                                                )}
+
 
                                                 {/* Settings */}
                                                 <Link

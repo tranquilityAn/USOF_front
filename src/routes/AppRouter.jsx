@@ -13,6 +13,7 @@ import SettingsPage from '../pages/SettingsPage/SettingsPage';
 import CreateUserPage from '../pages/Admin/CreateUserPage/CreateUserPage';
 import VerifyEmailPage from '../pages/Auth/VerifyEmailPage';
 import ResetPasswordPage from '../pages/Auth/ResetPasswordPage';
+import CategoriesPage from '../pages/Admin/CategoriesPage/CategoriesPage';
 
 export default function AppRouter() {
     return (
@@ -29,6 +30,7 @@ export default function AppRouter() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/verify" element={<VerifyEmailPage />} />
             <Route path="/reset" element={<ResetPasswordPage />} />
+            <Route path="/admin/categories" element={<PrivateRoute><AdminRoute><CategoriesPage /></AdminRoute></PrivateRoute>}/>
         </Routes>
     );
 }
