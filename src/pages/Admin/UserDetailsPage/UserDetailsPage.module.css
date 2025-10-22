@@ -1,0 +1,70 @@
+.pageWrap {
+    max-width: 820px;
+    margin: 24px auto;
+    padding: 16px;
+}
+
+.pageTitle {
+    margin-bottom: 12px;
+}
+
+.card {
+    border: 1px solid #2c2c2c;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 16px;
+    background: #111;
+}
+
+.userHeader {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.avatarLg {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.meta {
+    display: grid;
+    gap: 6px;
+}
+
+.metaRow {
+    display: flex;
+    gap: 8px;
+    color: #cfcfcf;
+}
+
+.metaRow span {
+    opacity: .7;
+}
+
+.formGrid {
+    display: grid;
+    gap: 12px;
+}
+
+.labelWrap {
+    display: grid;
+    gap: 6px;
+}
+
+.field {
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #333;
+    background: #151515;
+    color: #f5f5f5;
+}
+
+.btnRow {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}

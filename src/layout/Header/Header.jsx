@@ -9,8 +9,9 @@ import { IoSettingsOutline } from "react-icons/io5";
 import { RxExit } from "react-icons/rx";
 import { IoCreateOutline } from "react-icons/io5";
 import { getAvatarUrl } from '../../utils/getAvatarUrl';
-import { IoPersonAddOutline } from "react-icons/io5";
+// import { IoPersonAddOutline } from "react-icons/io5";
 import { TbCategoryPlus } from "react-icons/tb";
+import { HiOutlineUsers } from "react-icons/hi";
 
 export default function Header() {
     const navigate = useNavigate();
@@ -120,7 +121,7 @@ export default function Header() {
                                                     <AiOutlineHeart />
                                                     Favorites
                                                 </Link>
-                                                {user?.role === 'admin' && (
+                                                {/* {user?.role === 'admin' && (
                                                     <Link to='/admin/users/new'
                                                         className={styles.dropdownItem}
                                                         role='menuitem'
@@ -128,7 +129,7 @@ export default function Header() {
                                                     >
                                                         <IoPersonAddOutline />
                                                         Create user</Link>
-                                                )}
+                                                )} */}
 
                                                 {/* Categories */}
                                                 {user?.role === 'admin' && (
@@ -144,6 +145,21 @@ export default function Header() {
                                                         </Link>
                                                     </>
                                                 )}
+
+                                                {user?.role === 'admin' && (
+                                                    <>
+                                                        <Link
+                                                            to="/admin/users"
+                                                            className={styles.dropdownItem}
+                                                            role="menuitem"
+                                                            onClick={closeDropdown}
+                                                        >
+                                                            <HiOutlineUsers />
+                                                            Users
+                                                        </Link>
+                                                    </>
+                                                )}
+
 
 
                                                 {/* Settings */}

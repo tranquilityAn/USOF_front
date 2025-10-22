@@ -43,3 +43,21 @@ export const createUserRequest = async (payload) => {
     const { data } = await api.post('/users', payload);
     return data;
 };
+
+// GET /users  (admin only)
+export const getUsersRequest = async () => {
+    const { data } = await api.get('/users');
+    return data; // array of users
+};
+
+// GET /users/:id
+export const getUserByIdRequest = async (id) => {
+    const { data } = await api.get(`/users/${id}`);
+    return data; // user object
+};
+
+// PATCH /users/:id
+export const adminRemoveAvatarByIdRequest = async (id) => {
+    const { data } = await api.patch(`/users/${id}`, { profilePicture: null });
+    return data;
+};
