@@ -1,6 +1,13 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { loginRequest, meRequest, registerRequest } from './authApi';
 
+const readJSON = (k) => {
+    try { return JSON.parse(localStorage.getItem(k)); } catch { return null; }
+};
+
+const initialToken = localStorage.getItem('token');
+const initialUser = readJSON('user');
+
 // Thunks
 
 export const registerUser = createAsyncThunk(
@@ -44,12 +51,10 @@ export const fetchMe = createAsyncThunk(
     }
 );
 
-const initialToken = localStorage.getItem('token');
-
 const authSlice = createSlice({
     name: 'auth',
     initialState: {
-        user: null,
+        user: initialUser || null,
         token: initialToken || null,
         status: 'idle',
         error: null,
@@ -61,6 +66,7 @@ const authSlice = createSlice({
             state.user = null;
             state.token = null;
             localStorage.removeItem('token');
+            localStorage.removeItem('user');
         },
     },
     extraReducers: (builder) => {
@@ -77,7 +83,11 @@ const authSlice = createSlice({
                     state.token = token;
                     localStorage.setItem('token', token);
                 }
-                if (user) state.user = user;
+
+                if (user) {
+                    state.user = user;
+                    localStorage.setItem('user', JSON.stringify(user));
+                }
             })
             .addCase(login.rejected, (state, action) => {
                 state.status = 'failed';

@@ -5,7 +5,7 @@ export const api = axios.create({
 
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('token'); // або sessionStorage, залежно від того, де зберігаєш
+        const token = localStorage.getItem('token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -17,7 +17,13 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (res) => res,
     (err) => {
-        console.error('[API ERROR]', err?.response?.status, err?.response?.data || err.message);
+        const status = err?.response?.status;
+        if (status === 401) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            if (window.location.pathname !== '/login') window.location.assign('/login');
+        }
+        console.error('[API ERROR]', status, err?.response?.data || err.message);
         throw err;
     }
 );
