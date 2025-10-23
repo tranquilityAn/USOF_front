@@ -57,3 +57,13 @@ export const deletePostRequest = async (id) => {
     const { data } = await api.delete(`/posts/${id}`);
     return data; // 200 { description: 'Deleted' } або порожньо — не покладаємось
 };
+
+export const lockPostRequest = async (id) => {
+    const { data } = await api.post(`/posts/${id}/lock`);
+    return data;
+};
+
+export const unlockPostRequest = async (id) => {
+    const { data } = await api.delete(`/posts/${id}/lock`);
+    return data;
+};

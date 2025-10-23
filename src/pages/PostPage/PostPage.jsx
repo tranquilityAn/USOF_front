@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
-import { fetchPostById, clearCurrent, togglePostReaction, deletePost } from '../../features/posts/postsSlice';
+import { fetchPostById, clearCurrent, togglePostReaction, deletePost, unlockPost, lockPost } from '../../features/posts/postsSlice';
 import {
     fetchCommentsByPost,
     addComment,
@@ -136,6 +136,25 @@ export default function PostPage() {
                                     boxShadow: '0 6px 26px rgba(0,0,0,.35)', overflow: 'hidden', zIndex: 10
                                 }}
                             >
+                                {canManage && (
+                                    <button
+                                        role="menuitem"
+                                        type="button"
+                                        className="btn btn--ghost"
+                                        style={{ display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px', borderBottom: '1px solid #222' }}
+                                        onClick={() => {
+                                            if (post.lockedByAuthor) {
+                                                dispatch(unlockPost(post.id));
+                                            } else {
+                                                dispatch(lockPost(post.id));
+                                            }
+                                            setMenuOpen(false);
+                                        }}
+                                    >
+                                        {post.lockedByAuthor ? 'Unpin from profile' : 'Pin to profile'}
+                                    </button>
+                                )}
+
                                 <button
                                     role="menuitem"
                                     onClick={() => { setMenuOpen(false); navigate(`/post/${postId}/edit`); }}

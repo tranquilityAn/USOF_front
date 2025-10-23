@@ -8,7 +8,9 @@ import {
     fetchPostCategoriesRequest,
     createPostRequest,
     updatePostRequest,
-    deletePostRequest
+    deletePostRequest,
+    lockPostRequest,
+    unlockPostRequest
 } from './postsApi';
 import { hydratePost } from './hydratePost';
 
@@ -113,6 +115,21 @@ export const deletePost = createAsyncThunk(
     }
 );
 
+export const lockPost = createAsyncThunk(
+    'posts/lock',
+    async (id, { rejectWithValue }) => {
+        try { return await lockPostRequest(id); }
+        catch (e) { return rejectWithValue(e?.response?.data?.message || 'Failed to pin'); }
+    }
+);
+
+export const unlockPost = createAsyncThunk(
+    'posts/unlock',
+    async (id, { rejectWithValue }) => {
+        try { return await unlockPostRequest(id); }
+        catch (e) { return rejectWithValue(e?.response?.data?.message || 'Failed to unpin'); }
+    }
+);
 
 const initialState = {
     items: [],
@@ -240,7 +257,18 @@ const postsSlice = createSlice({
             .addCase(deletePost.rejected, (s, a) => {
                 s.deleteLoading = false;
                 s.deleteError = a.payload || a.error?.message || 'Failed';
-            });
+            })
+            .addCase(lockPost.fulfilled, (state, { payload }) => {
+                state.current = payload.id === state.current?.id ? payload : state.current;
+                const i = state.items.findIndex(p => p.id === payload.id);
+                if (i !== -1) state.items[i] = payload;
+            })
+            .addCase(unlockPost.fulfilled, (state, { payload }) => {
+                state.current = payload.id === state.current?.id ? payload : state.current;
+                const i = state.items.findIndex(p => p.id === payload.id);
+                if (i !== -1) state.items[i] = payload;
+            })
+
     }
 });
 
