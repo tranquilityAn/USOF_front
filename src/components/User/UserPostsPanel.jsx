@@ -58,7 +58,7 @@ export default function UserPostsPanel({ userId }) {
             </div>
 
             {total > limit && (
-                <div style={{ display: 'flex', gap: 8, marginTop: 12, alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: 8, marginTop: 12, alignItems: 'center', justifyContent: 'center' }}>
                     <button className="btn" onClick={onPrev} disabled={page <= 1}>Prev</button>
                     <span className="text-dim">Page {page}</span>
                     <button className="btn" onClick={onNext} disabled={items.length < limit}>Next</button>

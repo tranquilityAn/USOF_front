@@ -1,13 +1,10 @@
-//import { useEffect, useMemo } from 'react';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-//import { useParams, useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 import { fetchUserById, fetchUserPostsCount } from '../../features/authors/authorsSlice';
 import UserLayout from '../../components/User/UserLayout';
 import UserHeader from '../../components/User/UserHeader';
 import UserStats from '../../components/User/UserStats';
-//import UserActions from '../../components/User/UserActions';
 import UserPostsPanel from '../../components/User/UserPostsPanel';
 
 

@@ -17,8 +17,6 @@ export default function CommentNode({ postId, postAuthorId, comment, depth = 0, 
     const isAdmin = me?.role === 'admin';
     const isMine = !!(me?.id && (comment.author?.id === me.id || comment.userId === me.id || comment.authorId === me.id));
     const canManage = isMine || isAdmin;
-    //const canPin = (!!me?.id && me.id === postAuthorId) || isAdmin;
-    //const isTopLevel = comment.parentId == null || comment.parent_id == null;
     const parentIdNorm = (comment.parentId !== undefined ? comment.parentId : comment.parent_id);
     const isTopLevel = parentIdNorm == null; // true тільки якщо справді немає батька
     const canPin = isTopLevel && (!!me?.id && me.id === postAuthorId);

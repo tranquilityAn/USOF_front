@@ -12,14 +12,20 @@ import { toggleFavorite, selectIsFavorite, selectFavPending } from '../../featur
 export default function PostCard({ post }) {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    //const { token } = useSelector(s => s.auth);
     const { token } = useSelector(s => s.auth);
     const isFav = useSelector(s => selectIsFavorite(s, post?.id));
     const isPending = useSelector(s => selectFavPending(s, post?.id));
 
-    if (!post) return null;
+    const liveStatus = useSelector((s) => {
+        const fromArr = (arr = []) => arr.find(p => p?.id === post?.id);
+        const it = fromArr(s.posts?.items) || (s.posts?.current?.id === post?.id ? s.posts.current : null);
+        const pick = it || post || {};
+        if (typeof pick.status === 'string') return pick.status;                 // 'active' | 'inactive' | ...
+        if (typeof pick.isActive === 'boolean') return pick.isActive ? 'active' : 'inactive';
+        return undefined;
+    });
 
-    //const isFav = favIds?.has?.(post.id);
+    if (!post) return null;
 
     const onToggleFav = (e) => {
         e.preventDefault();
@@ -56,6 +62,7 @@ export default function PostCard({ post }) {
                 padding: 16,
                 display: 'grid',
                 gap: 8,
+                opacity: liveStatus === 'inactive' ? 0.6 : 1,
             }}
         >
             {/* Clicking the title opens the post page */}

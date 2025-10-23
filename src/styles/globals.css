@@ -54,6 +54,31 @@ body {
     display: grid;
     grid-template-columns: 320px 1fr;
     gap: 24px;
+    align-items: start;
+}
+
+.grid-2>aside {
+    align-self: start;
+    position: sticky;
+    top: 16px;
+    height: max-content;
+}
+
+@media (max-width: 768px) {
+    .grid-2 {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .grid-2>aside {
+        position: static;
+        top: auto;
+        height: auto;
+    }
+
+    .grid-2>aside .card {
+        padding: 12px;
+    }
 }
 
 /* Text helpers */
