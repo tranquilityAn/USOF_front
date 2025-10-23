@@ -7,7 +7,9 @@ import {
     reactToCommentRequest,
     removeCommentReactionRequest,
     fetchRepliesByCommentRequest,
-    updateCommentStatusRequest
+    updateCommentStatusRequest,
+    lockCommentRequest,
+    unlockCommentRequest
 } from './commentsApi';
 import { fetchUserByIdRequest } from '../authors/authorsApi';
 
@@ -210,6 +212,41 @@ function patchCommentEverywhereImmutable(state, commentId, patch) {
     }
 }
 
+export const toggleCommentReaction = createAsyncThunk(
+    'comments/toggleReaction',
+    async ({ commentId, type }, { getState, rejectWithValue }) => {
+        try {
+            const state = getState();
+            const my = state.comments.myReactionByComment?.[commentId] ?? null;
+            if (my === type) {
+                await removeCommentReactionRequest(commentId);
+                return { commentId, next: null };
+            } else {
+                await reactToCommentRequest(commentId, type);
+                return { commentId, next: type }; // 'like' | 'dislike'
+            }
+        } catch (err) {
+            return rejectWithValue(err?.response?.data?.message || 'Failed to toggle reaction');
+        }
+    }
+);
+
+export const lockComment = createAsyncThunk(
+    'comments/lock',
+    async ({ postId, commentId }, { rejectWithValue }) => {
+        try { return await lockCommentRequest(postId, commentId); }
+        catch (e) { return rejectWithValue(e?.response?.data?.message || 'Failed to pin comment'); }
+    }
+);
+
+export const unlockComment = createAsyncThunk(
+    'comments/unlock',
+    async ({ postId, commentId }, { rejectWithValue }) => {
+        try { return await unlockCommentRequest(postId, commentId); }
+        catch (e) { return rejectWithValue(e?.response?.data?.message || 'Failed to unpin comment'); }
+    }
+);
+
 const commentsSlice = createSlice({
     name: 'comments',
     initialState: { byPost: {}, repliesByComment: {}, loading: false, error: null, myReactionByComment: {} },
@@ -217,6 +254,14 @@ const commentsSlice = createSlice({
         clearPostComments(state, { payload: postId }) { delete state.byPost[postId]; },
     },
     extraReducers: (b) => {
+        const resort = (arr = []) =>
+            arr.slice().sort(
+                (a, b) =>
+                    (b.locked - a.locked) ||
+                    (new Date(a.publishDate) - new Date(b.publishDate)) ||
+                    (a.id - b.id)
+            );
+
         b.addCase(fetchCommentsByPost.pending, (s) => { s.loading = true; s.error = null; });
         b.addCase(fetchCommentsByPost.fulfilled, (s, { payload }) => {
             s.loading = false;
@@ -353,28 +398,41 @@ const commentsSlice = createSlice({
             }
         });
         b.addCase(toggleCommentStatus.rejected, (s, a) => { s.error = a.payload || 'Failed to update comment status'; });
+        b.addCase(lockComment.fulfilled, (state, { payload }) => {
+            // top-level comments
+            const i = state.items.findIndex(c => c.id === payload.id);
+            if (i !== -1) {
+                state.items[i] = payload;
+                state.items = resort(state.items);
+            }
+
+            // replies buckets
+            Object.values(state.repliesByComment || {}).forEach(bucket => {
+                const j = bucket.items.findIndex(c => c.id === payload.id);
+                if (j !== -1) {
+                    bucket.items[j] = payload;
+                    bucket.items = resort(bucket.items);
+                }
+            });
+        })
+        b.addCase(unlockComment.fulfilled, (state, { payload }) => {
+            const i = state.items.findIndex(c => c.id === payload.id);
+            if (i !== -1) {
+                state.items[i] = payload;
+                state.items = resort(state.items);
+            }
+
+            Object.values(state.repliesByComment || {}).forEach(bucket => {
+                const j = bucket.items.findIndex(c => c.id === payload.id);
+                if (j !== -1) {
+                    bucket.items[j] = payload;
+                    bucket.items = resort(bucket.items);
+                }
+            });
+        });
 
     },
 });
-
-export const toggleCommentReaction = createAsyncThunk(
-    'comments/toggleReaction',
-    async ({ commentId, type }, { getState, rejectWithValue }) => {
-        try {
-            const state = getState();
-            const my = state.comments.myReactionByComment?.[commentId] ?? null;
-            if (my === type) {
-                await removeCommentReactionRequest(commentId);
-                return { commentId, next: null };
-            } else {
-                await reactToCommentRequest(commentId, type);
-                return { commentId, next: type }; // 'like' | 'dislike'
-            }
-        } catch (err) {
-            return rejectWithValue(err?.response?.data?.message || 'Failed to toggle reaction');
-        }
-    }
-);
 
 export const { clearPostComments } = commentsSlice.actions;
 export default commentsSlice.reducer;

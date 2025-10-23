@@ -5,16 +5,23 @@ import {
     deleteComment,
     toggleCommentReaction,
     fetchRepliesByComment,
-    toggleCommentStatus
+    toggleCommentStatus,
+    lockComment,
+    unlockComment,
 } from '../../features/comments/commentsSlice';
 import { AiOutlineLike, AiFillLike, AiOutlineDislike, AiFillDislike } from 'react-icons/ai';
 
-export default function CommentNode({ postId, comment, depth = 0, maxDepth = 50 }) {
+export default function CommentNode({ postId, postAuthorId, comment, depth = 0, maxDepth = 50 }) {
     const dispatch = useDispatch();
     const { user: me } = useSelector((s) => s.auth);
     const isAdmin = me?.role === 'admin';
     const isMine = !!(me?.id && (comment.author?.id === me.id || comment.userId === me.id || comment.authorId === me.id));
     const canManage = isMine || isAdmin;
+    //const canPin = (!!me?.id && me.id === postAuthorId) || isAdmin;
+    //const isTopLevel = comment.parentId == null || comment.parent_id == null;
+    const parentIdNorm = (comment.parentId !== undefined ? comment.parentId : comment.parent_id);
+    const isTopLevel = parentIdNorm == null; // true тільки якщо справді немає батька
+    const canPin = isTopLevel && (!!me?.id && me.id === postAuthorId);
 
     const repliesBucket = useSelector((s) => s.comments.repliesByComment[comment.id]);
 
@@ -52,6 +59,20 @@ export default function CommentNode({ postId, comment, depth = 0, maxDepth = 50 
         if (typeof comment.status === 'string') return comment.status;
         if (typeof comment.isActive === 'boolean') return comment.isActive ? 'active' : 'inactive';
         return undefined;
+    });
+
+    const liveLocked = useSelector(s => {
+        const fromArr = (arr) => {
+            const it = arr?.find(c => c.id === comment.id);
+            return it?.locked;
+        };
+        const top = fromArr(s.comments.byPost?.[postId]);
+        if (typeof top === 'boolean') return top;
+        for (const k in (s.comments.repliesByComment || {})) {
+            const v = fromArr(s.comments.repliesByComment[k]?.items);
+            if (typeof v === 'boolean') return v;
+        }
+        return !!comment.locked;
     });
 
     // close menu on outside click
@@ -121,6 +142,20 @@ export default function CommentNode({ postId, comment, depth = 0, maxDepth = 50 
         }
     };
 
+    const onTogglePin = async () => {
+        if (!canPin) return;
+        try {
+            if (liveLocked) {
+                await dispatch(unlockComment({ postId, commentId: comment.id })).unwrap();
+            } else {
+                await dispatch(lockComment({ postId, commentId: comment.id })).unwrap();
+            }
+            setMenuOpen(false);
+        } catch (err) {
+            console.error('Failed to toggle pin', err);
+        }
+    };
+
     // util: format date/time from createdAt/updatedAt
     const dt = new Date(comment.createdAt || comment.updatedAt || Date.now());
     const dateStr = isNaN(dt.getTime()) ? '' : dt.toLocaleDateString();
@@ -154,11 +189,16 @@ export default function CommentNode({ postId, comment, depth = 0, maxDepth = 50 
                             Inactive
                         </span>
                     )}
+                    {isTopLevel && liveLocked && (
+                        <span style={{ fontSize: 12, padding: '2px 6px', border: '1px solid #444', borderRadius: 6, textTransform: 'uppercase' }}>
+                            Pinned
+                        </span>
+                    )}
 
                     <div style={{ opacity: .8 }}>•</div>
                     <div style={{ fontSize: 13, opacity: .9 }}>{dateStr} {timeStr && <>• {timeStr}</>}</div>
 
-                    {canManage && (
+                    {(canManage || canPin) && (
                         <div ref={menuRef} style={{ position: 'relative' }}>
                             <button
                                 aria-haspopup="menu"
@@ -182,24 +222,38 @@ export default function CommentNode({ postId, comment, depth = 0, maxDepth = 50 
                                         boxShadow: '0 6px 26px rgba(0,0,0,.35)', overflow: 'hidden', zIndex: 10,
                                     }}
                                 >
+                                    {canPin && (
+                                        <button
+                                            role="menuitem"
+                                            onClick={() => { setMenuOpen(false); onTogglePin(); }}
+                                            className="btn btn--ghost"
+                                            style={{ display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px' }}
+                                        >
+                                            {liveLocked ? 'Unpin comment' : 'Pin comment'}
+                                        </button>
+                                    )}
                                     {/* toggle status — for owner and admin */}
-                                    <button
-                                        role="menuitem"
-                                        onClick={() => { setMenuOpen(false); onToggleStatus(); }}
-                                        className="btn btn--ghost"
-                                        style={{ display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px' }}
-                                    >
-                                        {liveStatus === 'inactive' ? 'Activate' : 'Inactivate'}
-                                    </button>
+                                    {canManage && (
+                                        <button
+                                            role="menuitem"
+                                            onClick={() => { setMenuOpen(false); onToggleStatus(); }}
+                                            className="btn btn--ghost"
+                                            style={{ display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px' }}
+                                        >
+                                            {liveStatus === 'inactive' ? 'Activate' : 'Inactivate'}
+                                        </button>
+                                    )}
 
-                                    <button
-                                        role="menuitem"
-                                        onClick={() => { setMenuOpen(false); onDelete(); }}
-                                        className="btn btn--ghost"
-                                        style={{ display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px' }}
-                                    >
-                                        Delete
-                                    </button>
+                                    {canManage && (
+                                        <button
+                                            role="menuitem"
+                                            onClick={() => { setMenuOpen(false); onDelete(); }}
+                                            className="btn btn--ghost"
+                                            style={{ display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px' }}
+                                        >
+                                            Delete
+                                        </button>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -282,6 +336,7 @@ export default function CommentNode({ postId, comment, depth = 0, maxDepth = 50 
                         <CommentNode
                             key={child.id}
                             postId={postId}
+                            postAuthorId={postAuthorId}
                             comment={child}
                             depth={depth + 1}
                             maxDepth={maxDepth}

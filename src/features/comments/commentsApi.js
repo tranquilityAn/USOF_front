@@ -51,3 +51,13 @@ export const updateCommentStatusRequest = async (commentId, status /* 'active'|'
     const { data } = await api.patch(`/comments/${commentId}`, { status });
     return data;
 };
+
+export const lockCommentRequest = async (postId, commentId) => {
+    const { data } = await api.post(`/posts/${postId}/comments/${commentId}/lock`);
+    return data;
+};
+
+export const unlockCommentRequest = async (postId, commentId) => {
+    const { data } = await api.delete(`/posts/${postId}/comments/${commentId}/lock`);
+    return data;
+};

@@ -305,7 +305,13 @@ export default function PostPage() {
 
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 12 }}>
                     {comments.map((c) => (
-                        <CommentNode key={c.id} postId={postId} comment={c} depth={0} />
+                        <CommentNode
+                            key={c.id}
+                            postId={postId}
+                            postAuthorId={post.author?.id || post.userId || post.authorId}
+                            comment={c}
+                            depth={0}
+                        />
                     ))}
                 </ul>
             </section>
