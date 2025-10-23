@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getAvatarUrl } from '../../../utils/getAvatarUrl';
+import Avatar from '../../../components/Avatar/Avatar';
 import {
     getUserByIdRequest,
     updateUserRequest,
@@ -36,11 +36,6 @@ export default function UserDetailsPage() {
             }
         })();
     }, [id]);
-
-    const avatarSrc = useMemo(
-        () => getAvatarUrl(user?.profilePicture) || 'https://via.placeholder.com/96?text=User',
-        [user?.profilePicture]
-    );
 
     const onSave = async (e) => {
         e.preventDefault();
@@ -87,7 +82,7 @@ export default function UserDetailsPage() {
 
             <div className={styles.card}>
                 <div className={styles.userHeader}>
-                    <img src={avatarSrc} alt="" className={styles.avatarLg} />
+                    <Avatar src={user?.profilePicture} alt={user?.login} size={96} className={styles.avatarLg} />
                     <div className={styles.meta}>
                         <div className={styles.metaRow}><span>ID:</span><strong>{user.id}</strong></div>
                         <div className={styles.metaRow}><span>Login:</span><strong>{user.login}</strong></div>

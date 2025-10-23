@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAvatarUrl } from '../../../utils/getAvatarUrl';
+import Avatar from '../../../components/Avatar/Avatar';
 import { getUsersRequest, deleteAccountByIdRequest } from '../../../features/users/usersApi';
 import styles from './UsersPage.module.css';
 
@@ -96,11 +96,7 @@ export default function UsersPage() {
                         {pageItems.map(u => (
                             <tr key={u.id}>
                                 <td>
-                                    <img
-                                        src={getAvatarUrl(u.profilePicture) || 'https://via.placeholder.com/40?text=U'}
-                                        alt=""
-                                        className={styles.avatar}
-                                    />
+                                    <Avatar src={u.profilePicture} alt={u.login} size={40} className={styles.avatar} />
                                 </td>
                                 <td>{u.login}</td>
                                 <td>{u.fullName || '—'}</td>

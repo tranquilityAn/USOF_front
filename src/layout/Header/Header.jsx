@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../features/auth/authSlice';
@@ -9,7 +9,7 @@ import { AiOutlineHeart } from 'react-icons/ai';
 import { IoSettingsOutline } from "react-icons/io5";
 import { RxExit } from "react-icons/rx";
 import { IoCreateOutline } from "react-icons/io5";
-import { getAvatarUrl } from '../../utils/getAvatarUrl';
+import Avatar from '../../components/Avatar/Avatar';
 import { TbCategoryPlus } from "react-icons/tb";
 import { HiOutlineUsers } from "react-icons/hi";
 
@@ -20,11 +20,6 @@ export default function Header() {
     const { user, token } = useSelector((s) => s.auth);
 
     const isAuth = !!token;
-
-    const avatarSrc = useMemo(() => {
-        const raw = user?.profilePicture ?? user?.avatar ?? '';
-        return getAvatarUrl(raw) || 'https://via.placeholder.com/32?text=U';
-    }, [user]);
 
     // Header without search/user block on login and register pages
     const isAuthPage = ['/login', '/register'].includes(location.pathname);
@@ -87,12 +82,11 @@ export default function Header() {
                                             aria-expanded={isDropdownOpen ? 'true' : 'false'}
                                             aria-label="User menu"
                                         >
-                                            <img
-                                                src={avatarSrc}
-                                                alt="avatar"
+                                            <Avatar
+                                                src={user?.profilePicture}
+                                                alt={user?.login ? `@${user.login}` : 'avatar'}
+                                                size={40}                     // або залиш ширину через CSS-клас
                                                 className={styles.avatar}
-                                                loading="lazy"
-                                                onError={(e) => { e.currentTarget.src = 'https://via.placeholder.com/32?text=U'; }}
                                             />
                                             <span className={styles.userHandle}>
                                                 {user?.login ? `@${user.login}` : '@user'}

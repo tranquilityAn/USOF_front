@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { getAvatarUrl } from '../../utils/getAvatarUrl';
+import Avatar from '../../components/Avatar/Avatar';
 import {
     updateMyProfile,
     removeMyAvatar,
@@ -28,10 +28,6 @@ export default function SettingsPage() {
     const [emailForReset, setEmailForReset] = useState('');
 
     const fileInputRef = useRef(null);
-    const avatarSrc = useMemo(
-        () => getAvatarUrl(me?.profilePicture) || 'https://via.placeholder.com/96?text=User',
-        [me?.profilePicture]
-    );
 
     const [confirmInput, setConfirmInput] = useState('');
     const canDelete = confirmInput.trim().toUpperCase() === 'DELETE';
@@ -62,7 +58,6 @@ export default function SettingsPage() {
 
     useEffect(() => {
         if (deleteSuccess) {
-            // після видалення — на головну
             navigate('/');
         }
     }, [deleteSuccess, navigate]);
@@ -117,12 +112,7 @@ export default function SettingsPage() {
                 <h2 className="h2" style={{ margin: 0 }}>Profile</h2>
 
                 <div className={styles.avatarRow}>
-                    <img
-                        src={avatarSrc}
-                        alt=""
-                        className={styles.avatar}
-                        onError={(e) => { e.currentTarget.src = 'https://via.placeholder.com/96?text=User'; }}
-                    />
+                    <Avatar src={me?.profilePicture} alt={me?.login} size={96} className={styles.avatarLg} />
                     <div className={styles.btnGroup}>
                         <button type="button" className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => fileInputRef.current?.click()}>
                             Change avatar
