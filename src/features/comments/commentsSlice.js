@@ -129,15 +129,30 @@ export const fetchRepliesByComment = createAsyncThunk(
     }
 );
 
-export const addComment = createAsyncThunk('comments/add', async ({ postId, content, parentId = null }, { rejectWithValue }) => {
-    try {
-        const created = await addCommentRequest({ postId, content, parentId }); // ✅ новий виклик
-        created.likesCount = 0; created.dislikesCount = 0;
-        return { postId, parentId, comment: created };
-    } catch (err) {
-        return rejectWithValue(err?.response?.data?.message || 'Failed to add comment');
+export const addComment = createAsyncThunk(
+    'comments/add',
+    async ({ postId, content, parentId = null }, { rejectWithValue, getState }) => {
+        try {
+            const created = await addCommentRequest({ postId, content, parentId });
+            const me = getState()?.auth?.user;
+            if (me) {
+                created.author = created.author || {
+                    id: me.id,
+                    login: me.login,
+                    fullName: me.fullName,
+                    email: me.email,
+                };
+                created.authorId ??= me.id;
+                created.userId ??= me.id;
+            }
+            created.likesCount ??= 0;
+            created.dislikesCount ??= 0;
+            return { postId, parentId, comment: created };
+        } catch (err) {
+            return rejectWithValue(err?.response?.data?.message || 'Failed to add comment');
+        }
     }
-});
+);
 
 export const deleteComment = createAsyncThunk('comments/delete', async (commentId, { rejectWithValue }) => {
     try { return await deleteCommentRequest(commentId); }
@@ -274,9 +289,8 @@ const commentsSlice = createSlice({
             }
         });
         b.addCase(fetchCommentsByPost.rejected, (s, a) => { s.loading = false; s.error = a.payload || 'Error'; });
-        b.addCase(addComment.fulfilled, (s, { payload: comment }) => {
-            const { postId, parentId } = comment;
-
+        b.addCase(addComment.fulfilled, (s, { payload }) => {
+            const { postId, parentId, comment } = payload;
             if (parentId == null) {
                 if (!s.byPost[postId]) s.byPost[postId] = [];
                 s.byPost[postId].unshift(comment);
