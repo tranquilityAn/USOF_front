@@ -11,7 +11,15 @@ import { useSelector } from 'react-redux';
 export default function CategoryChips({ categories, categoryIds, size = 'md' }) {
     const allCats = useSelector(s => s.categories.items);
 
+    console.log('[CategoryChips] props:', { categories, categoryIds });
+    console.log('[CategoryChips] allCats from store:', Array.isArray(allCats) ? allCats.length : allCats);
+
     let list = Array.isArray(categories) ? categories : [];
+   
+    if (list.length && typeof list[0] === 'number' && allCats?.length) {
+        const map = new Map(allCats.map(c => [c.id, c]));
+        list = list.map(id => map.get(id)).filter(Boolean);
+    }
     if ((!list || !list.length) && Array.isArray(categoryIds) && allCats?.length) {
         const map = new Map(allCats.map(c => [c.id, c]));
         list = categoryIds.map(id => map.get(id)).filter(Boolean);

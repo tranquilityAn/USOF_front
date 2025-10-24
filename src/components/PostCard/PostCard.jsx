@@ -72,7 +72,11 @@ export default function PostCard({ post }) {
                 </Link>
             </h3>
             {/* Теги категорій */}
-            <CategoryChips categories={categories} size="sm" />
+            <CategoryChips
+                categories={Array.isArray(categories) && typeof categories[0] === 'object' ? categories : undefined}
+                categoryIds={Array.isArray(categories) && typeof categories[0] === 'number' ? categories : post.categoryIds}
+                size="sm"
+            />
             <div style={{ fontSize: 12, opacity: 0.85 }}>
                 @{author?.login || 'anon'} • {date.toLocaleString()}
             </div>
