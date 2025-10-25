@@ -16,6 +16,7 @@ import ResetPasswordPage from '../pages/Auth/ResetPasswordPage';
 import CategoriesPage from '../pages/Admin/CategoriesPage/CategoriesPage';
 import UsersPage from '../pages/Admin/UserPage/UserPage';
 import UserDetailsPage from '../pages/Admin/UserDetailsPage/UserDetailsPage';
+import ConfirmEmailPage from '../pages/Auth/ConfirmEmailPage';
 
 export default function AppRouter() {
     return (
@@ -30,6 +31,7 @@ export default function AppRouter() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/settings/profile" element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/confirm-email" element={<ConfirmEmailPage />} />
             <Route path="/verify" element={<VerifyEmailPage />} />
             <Route path="/reset" element={<ResetPasswordPage />} />
             <Route path="/admin/categories" element={<PrivateRoute><AdminRoute><CategoriesPage /></AdminRoute></PrivateRoute>} />

@@ -19,3 +19,13 @@ export const meRequest = async (id) => {
 	const { data } = await api.get(`/users/${id}`);
 	return data;
 }
+
+// --- Confirm email flows ---
+export const resendVerify = (payload /* { login?: string, email?: string } */) =>
+	api.post('/auth/verify-email/resend', payload);
+
+export const changeVerifyEmail = (payload /* { login: string, newEmail: string } */) =>
+	api.post('/auth/verify-email/change', payload);
+
+export const getVerifyTtl = () =>
+	api.get('/auth/verify-email/ttl');

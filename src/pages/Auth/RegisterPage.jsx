@@ -37,11 +37,16 @@ export default function RegisterPage() {
     const onSubmit = (values) => {
         dispatch(registerUser(values))
             .unwrap()
-            .then(() => {
-                // Success: redirect to /login with a hint
-                navigate('/login', { state: { regOk: true } });
+            .then((payload) => {
+                const login = payload?.login || values.login;
+                const email = payload?.email || values.email;
+
+                navigate(
+                    `/confirm-email?login=${encodeURIComponent(login)}&email=${encodeURIComponent(email)}`
+                );
             })
-            .catch(() => {/* Error handled below from Redux */ });
+            .catch(() => {
+            });
     };
 
     // if user already authorized
