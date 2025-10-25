@@ -18,7 +18,11 @@ api.interceptors.response.use(
     (res) => res,
     (err) => {
         const status = err?.response?.status;
+        const reqUrl = err?.config?.url || '';
         if (status === 401) {
+            if (reqUrl.includes('/auth/login')) {
+                return Promise.reject(err);
+            }
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             if (window.location.pathname !== '/login') window.location.assign('/login');
