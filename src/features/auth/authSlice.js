@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { loginRequest, meRequest, registerRequest } from './authApi';
+import { extractApiError } from '../../app/httpError';
 
 const readJSON = (k) => {
     try { return JSON.parse(localStorage.getItem(k)); } catch { return null; }
@@ -32,7 +33,7 @@ export const login = createAsyncThunk(
             const res = await loginRequest({ login, password });
             return res; // { token, user? }
         } catch (err) {
-            return rejectWithValue(err?.response?.data?.message || 'Login failed');
+            return rejectWithValue(extractApiError(err, 'Login failed'));
         }
     }
 );

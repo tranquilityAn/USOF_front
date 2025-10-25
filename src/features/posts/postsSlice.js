@@ -169,6 +169,11 @@ const postsSlice = createSlice({
     initialState,
     reducers: {
         clearCurrent(state) { state.current = null; state.currentError = null; state.currentLoading = false; },
+        clearCreation(state) {
+            state.lastCreatedId = null;
+            state.createError = null;
+            state.createLoading = false;
+        },
         setFilters(state, { payload }) {
             state.filters = { ...state.filters, ...payload };
         },
@@ -272,5 +277,5 @@ const postsSlice = createSlice({
     }
 });
 
-export const { setFilters, setPage, clearCurrent } = postsSlice.actions;
+export const { setFilters, setPage, clearCreation, clearCurrent } = postsSlice.actions;
 export default postsSlice.reducer;

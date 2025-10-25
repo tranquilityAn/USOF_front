@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { fetchCategories } from '../../features/categories/categoriesSlice';
-import { createPost } from '../../features/posts/postsSlice';
+import { createPost, clearCreation } from '../../features/posts/postsSlice';
 import CategoryMultiSelect from '../../components/CategoryMultiSelect/CategoryMultiSelect';
 
 export default function CreatePostPage() {
@@ -20,6 +20,7 @@ export default function CreatePostPage() {
 
     useEffect(() => { if (!categories?.length) dispatch(fetchCategories()); }, [dispatch, categories?.length]);
     useEffect(() => { if (!token) navigate('/login'); }, [token, navigate]);
+    useEffect(() => { dispatch(clearCreation()); }, [dispatch]);
     useEffect(() => { if (lastCreatedId) navigate(`/post/${lastCreatedId}`); }, [lastCreatedId, navigate]);
 
 
