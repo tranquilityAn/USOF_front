@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useDispatch, useSelector } from 'react-redux';
 import { registerUser } from '../../features/auth/authSlice';
 import { useNavigate, Link } from 'react-router-dom';
-import styles from './LoginPage.module.css';
+import styles from './Auth.module.css';
 
 const schema = z.object({
     login: z.string().min(3, 'Minimum 3 symbols'),
@@ -56,44 +56,43 @@ export default function RegisterPage() {
 
     return (
         <div className={styles.wrapper}>
-            <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+            <form onSubmit={handleSubmit(onSubmit)} className={`${styles.card} ${styles.form}`}>
                 <h1 className={styles.title}>Registration</h1>
 
-                <label className={styles.label}>
-                    Login
-                    <input {...register('login')} className={styles.input} placeholder="your_login" />
-                    {errors.login && <span className={styles.error}>{errors.login.message}</span>}
-                </label>
+                <div className={styles.group}>
+                    <label htmlFor="login" className={styles.label}>Login</label>
+                    <input id="login" {...register('login')} className={styles.input} placeholder="your_login" />
+                    {errors.login && <span className={styles.errorText}>{errors.login.message}</span>}
+                </div>
 
-                <label className={styles.label}>
-                    Full name
-                    <input {...register('fullName')} className={styles.input} placeholder="Your name" />
-                    {errors.fullName && <span className={styles.error}>{errors.fullName.message}</span>}
-                </label>
+                <div className={styles.group}>
+                    <label htmlFor="fullName" className={styles.label}>Full name</label>
+                    <input id="fullName" {...register('fullName')} className={styles.input} placeholder="Your name" />
+                    {errors.fullName && <span className={styles.errorText}>{errors.fullName.message}</span>}
+                </div>
 
-                <label className={styles.label}>
-                    Email
-                    <input type="email" {...register('email')} className={styles.input} placeholder="you@example.com" />
-                    {errors.email && <span className={styles.error}>{errors.email.message}</span>}
-                </label>
+                <div className={styles.group}>
+                    <label htmlFor="email" className={styles.label}>Email</label>
+                    <input id="email" type="email" {...register('email')} className={styles.input} placeholder="you@example.com" />
+                    {errors.email && <span className={styles.errorText}>{errors.email.message}</span>}
+                </div>
 
-                <label className={styles.label}>
-                    Password
-                    <input type="password" {...register('password')} className={styles.input} placeholder="••••••" />
-                    {errors.password && <span className={styles.error}>{errors.password.message}</span>}
-                </label>
+                <div className={styles.group}>
+                    <label htmlFor="password" className={styles.label}>Password</label>
+                    <input id="password" type="password" {...register('password')} className={styles.input} placeholder="••••••" />
+                    {errors.password && <span className={styles.errorText}>{errors.password.message}</span>}
+                </div>
 
-                <label className={styles.label}>
-                    Confirm password
-                    <input type="password" {...register('passwordConfirmation')} className={styles.input} placeholder="••••••" />
-                    {errors.passwordConfirmation && <span className={styles.error}>{errors.passwordConfirmation.message}</span>}
-                </label>
+                <div className={styles.group}>
+                    <label htmlFor="passwordConfirmation" className={styles.label}>Confirm password</label>
+                    <input id="passwordConfirmation" type="password" {...register('passwordConfirmation')} className={styles.input} placeholder="••••••" />
+                    {errors.passwordConfirmation && <span className={styles.errorText}>{errors.passwordConfirmation.message}</span>}
+                </div>
 
                 <button type="submit" disabled={registerStatus === 'loading'} className={styles.button}>
-                    {registerStatus === 'loading' ? 'Registering' : 'Create an account'}
+                    {registerStatus === 'loading' ? 'Registering…' : 'Create an account'}
                 </button>
-
-                {registerError && <div className={styles.error}>{registerError}</div>}
+                {registerError && <div className={styles.errorText}>{registerError}</div>}
 
                 <div className={styles.footer}>
                     Already have an account? <Link to="/login" className={styles.link}>Log in</Link>

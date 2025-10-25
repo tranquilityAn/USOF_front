@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useDispatch, useSelector } from 'react-redux';
 import { login } from '../../features/auth/authSlice';
 import { useNavigate, Link } from 'react-router-dom';
-import styles from './LoginPage.module.css';
+import styles from './Auth.module.css';
 
 const schema = z.object({
     login: z.string().min(3, 'Minimum 3 symbols'),
@@ -33,30 +33,34 @@ export default function LoginPage() {
     }, [token, navigate]);
 
     return (
-        <div className={styles.wrapper}>
-            <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
-                <h1 className={styles.title}>Login</h1>
+        <div className={styles.wrap}>
+            <form onSubmit={handleSubmit(onSubmit)} className={styles.card}>
+                <h1 className={styles.title}>Log in</h1>
+                <p className={styles.subtitle}>Welcome back</p>
 
-                <label className={styles.label}>
-                    Login
-                    <input {...register('login')} className={styles.input} placeholder="login" />
-                    {errors.login && <span className={styles.error}>{errors.login.message}</span>}
-                </label>
+                <div className={styles.form}>
+                    <div className={styles.group}>
+                        <label className={styles.label}>Login</label>
+                        <input className={styles.input} {...register('login')} />
+                        {errors.login && <div className={styles.errorText}>{errors.login.message}</div>}
+                    </div>
 
-                <label className={styles.label}>
-                    Password
-                    <input type="password" {...register('password')} className={styles.input} placeholder="••••••" />
-                    {errors.password && <span className={styles.error}>{errors.password.message}</span>}
-                </label>
+                    <div className={styles.group}>
+                        <label className={styles.label}>Password</label>
+                        <input className={styles.input} type="password" {...register('password')} />
+                        {errors.password && <div className={styles.errorText}>{errors.password.message}</div>}
+                    </div>
 
-                <button type="submit" disabled={status === 'loading'} className={styles.button}>
-                    {status === 'loading' ? 'Loggin...' : 'Log in'}
-                </button>
+                    <div className={styles.actions}>
+                        <button type="submit" disabled={status === 'loading'} className={styles.button}>
+                            {status === 'loading' ? 'Logging…' : 'Log in'}
+                        </button>
+                        {error && <div className={styles.errorText}>{error}</div>}
+                    </div>
 
-                {error && <div className={styles.error}>{error}</div>}
-
-                <div className={styles.footer}>
-                    Don't have an account? <Link to="/register" className={styles.link}>Register</Link>
+                    <div className={styles.footer}>
+                        Don’t have an account? <Link to="/register" className={styles.link}>Register</Link>
+                    </div>
                 </div>
             </form>
         </div>
