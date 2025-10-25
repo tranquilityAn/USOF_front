@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { fetchPostById, clearCurrent, togglePostReaction, deletePost, unlockPost, lockPost } from '../../features/posts/postsSlice';
 import {
     fetchCommentsByPost,
@@ -104,6 +104,7 @@ export default function PostPage() {
     };
 
     const authorLabel = post.author?.name || post.author?.login || `@user_${post.author?.id || 'anon'}`;
+    const authorId = post.author?.id ?? post.userId ?? post.authorId;
 
     return (
         <div style={{ maxWidth: 860, margin: '24px auto', padding: 16 }}>
@@ -179,8 +180,20 @@ export default function PostPage() {
             </div>
 
             {/* Author / categories */}
-            <div style={{ opacity: .8, marginBottom: 8, marginTop: 8 }}>
-                by <strong>{authorLabel}</strong>
+            <div style={{ opacity: 0.8, marginBottom: 8, marginTop: 8 }}>
+                by{' '}
+                <Link
+                    to={`/profile/${authorId}`}
+                    style={{
+                        fontWeight: 'bold',
+                        color: 'inherit',
+                        textDecoration: 'none',
+                        cursor: 'pointer'
+                    }}
+                    title={`Go to ${authorLabel} profile`}
+                >
+                    {authorLabel}
+                </Link>
             </div>
             <CategoryChips categories={post.categories} />
 

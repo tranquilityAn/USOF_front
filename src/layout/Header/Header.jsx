@@ -57,9 +57,11 @@ export default function Header() {
 
                 {!isAuthPage && (
                     <>
-                        <div className={styles.search}>
-                            <CommandSearch placeholder="Go to page or @login…" />
-                        </div>
+                        {isAuth && (
+                            <div className={styles.search}>
+                                <CommandSearch placeholder="Go to page or @login…" />
+                            </div>
+                        )}
                         <div className={styles.userBlock}>
                             {isAuth ? (
                                 <>

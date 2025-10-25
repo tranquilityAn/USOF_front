@@ -48,6 +48,9 @@ export default function PostCard({ post }) {
         coverUrl,
     } = post;
 
+    const authorId = author?.id ?? post.userId ?? post.authorId;
+    const authorLogin = author?.login ?? author?.name ?? `user_${authorId || 'anon'}`;
+
     const date = new Date(createdAt || publishDate || Date.now());
     const short =
         (excerpt && String(excerpt)) ||
@@ -71,14 +74,30 @@ export default function PostCard({ post }) {
                     {title || 'Без назви'}
                 </Link>
             </h3>
-            {/* Теги категорій */}
+            {/* Categories */}
             <CategoryChips
                 categories={Array.isArray(categories) && typeof categories[0] === 'object' ? categories : undefined}
                 categoryIds={Array.isArray(categories) && typeof categories[0] === 'number' ? categories : post.categoryIds}
                 size="sm"
             />
+            {/* Author */}
             <div style={{ fontSize: 12, opacity: 0.85 }}>
-                @{author?.login || 'anon'} • {date.toLocaleString()}
+                <Link
+                    to={authorId ? `/profile/${authorId}` : '#'}
+                    onClick={(e) => {
+                        if (!authorId) e.preventDefault();
+                    }}
+                    style={{
+                        color: 'inherit',
+                        textDecoration: 'none',
+                        fontWeight: '500',
+                        cursor: authorId ? 'pointer' : 'default',
+                    }}
+                    title={`Перейти в профіль ${authorLogin}`}
+                >
+                    @{author?.login || 'anon'}
+                </Link>{' '}
+                • {date.toLocaleString()}
             </div>
 
             {coverUrl && (
