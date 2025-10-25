@@ -1,70 +1,94 @@
-# Getting Started with Create React App
+# USOF Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern **React-based frontend** for the *USOF* social blogging platform — a full-featured web app where users can register, publish posts, comment, like, and manage favorites.  
+The interface provides a clean, responsive layout with authorization, user profiles, and admin features for managing content.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## ✨ Features
 
-### `npm start`
+- 🔐 **User authentication** (registration, login, email verification, password reset)  
+- 📰 **Post management** — create, edit, and view posts with categories  
+- 💬 **Comments and reactions** — likes, dislikes, favorites  
+- 👤 **User profiles** with rating, and posts list  
+- 🧭 **Search and navigation** with command bar and filters  
+- ⚙️ **Admin features** (restricted to authorized users)  
+- 📱 **Fully responsive UI** — adaptive layout for desktop and mobile  
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🖼️ Screenshots
+ 
+1. **🏠 Homepage with posts list**
+![Homepage with post list](images/Homepage.png)
+2. **📝 Post creation form**  
+![Post creation form](images/Post_creation_page.png)
+3. **👤 User profile page**
+![User provile page](images/User_profile_page.png)
+4. **💬 Single post with comments**
+![Single post with comments](images/Post_page.png)
+5. **🔐 Login and registration pages**
+![Login page](images/Login_page.png)
+![Register page](images/Register_page.png)
+6. **⚙️ Admin page**
+![Admin page](images/Admin_page.png)
 
-### `npm test`
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## ⚙️ Requirements and Dependencies
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Prerequisites
+- **Node.js** ≥ 18  
+- **npm** package manager  
+- Backend API running locally or on a server
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Main dependencies
+| Package | Purpose |
+|----------|----------|
+| `react`, `react-dom` | UI rendering |
+| `react-router-dom` | Routing and navigation |
+| `redux`, `@reduxjs/toolkit`, `react-redux` | Global state management |
+| `axios` | API requests |
+| `react-hook-form`, `zod` | Forms and validation |
+| `react-icons` | UI icons |
+| `tailwindcss` or custom CSS modules | Styling |
+| `vite` | Fast development server and bundler |
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
 
-### `npm run eject`
+## 🚀 How to Run the Project
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Follow these steps to build and launch the frontend locally.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### 1️⃣ Clone the repository
+```bash
+git clone https://github.com/<your-username>/usof-frontend.git
+cd usof-frontend
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### 2️⃣ Install dependencies
+```bash
+npm install
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### 3️⃣ Configure environment variables
+Create a `.env` file in the root directory with backend API URL and other options:
+```bash
+REACT_APP_API_URL=http://host:port/api
+REACT_APP_API_BASE=http://host:port
+```
 
-## Learn More
+### 4️⃣ Run the development server
+```bash
+npm run dev
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+The app will be available at:
+👉 http://host:port/
 
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### 5️⃣ Build for production
+```bash
+npm run build
+npm run preview
+```
