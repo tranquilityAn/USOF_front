@@ -16,7 +16,7 @@ export const registerUser = createAsyncThunk(
     async (payload, { rejectWithValue }) => {
         try {
             const user = await registerRequest(payload);
-            return user; // 201 Created -> user
+            return user;
         } catch (err) {
             const msg = err?.response?.data?.message
                 || err?.response?.data?.error

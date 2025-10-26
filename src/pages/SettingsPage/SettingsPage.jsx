@@ -93,7 +93,6 @@ export default function SettingsPage() {
     };
 
     const handleDeleteAccount = async () => {
-        // додатковий native confirm — на випадок якщо користувач натиснув випадково
         if (!canDelete) return;
         const ok = window.confirm(
             'This will permanently delete your profile, all posts, comments, and related data. Continue?'

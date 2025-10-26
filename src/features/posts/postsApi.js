@@ -1,61 +1,53 @@
 import { api } from '../../app/api';
 
-// Список вже є
 export const fetchPostsRequest = async (params) => {
     const { data } = await api.get('/posts', { params });
-    return data; // { items, page, limit, total }
+    return data; 
 };
 
-// Отримати один пост
 export const fetchPostByIdRequest = async (id) => {
     const { data } = await api.get(`/posts/${id}`);
-    return data; // Post
+    return data; 
 };
 
 export const fetchPostCategoriesRequest = async (id) => {
     const { data } = await api.get(`/posts/${id}/categories`);
-    return data; // Category[]
+    return data; 
 };
 
-// масив усіх лайків/дизлайків поста (для знання власної реакції, якщо треба)
 export const fetchPostReactionsRequest = async (id) => {
     const { data } = await api.get(`/posts/${id}/like`);
-    return data; // Array<Like {authorId, type:'like'|'dislike'}>
+    return data; 
 };
 
 export const fetchCommentsByPostRequest = async (postId) => {
     const { data } = await api.get(`/posts/${postId}/comments`);
-    return data; // Array<Comment>
+    return data; 
 };
 
-// поставити реакцію (like або dislike)
-export const reactToPostRequest = async (id, type /* 'like'|'dislike' */) => {
+export const reactToPostRequest = async (id, type) => {
     const { data } = await api.post(`/posts/${id}/like`, { type });
-    return data; // 201, без тіла або з якимось payload — не покладаємось
+    return data; 
 };
 
-// прибрати свою реакцію з поста
 export const removePostReactionRequest = async (id) => {
     const { data } = await api.delete(`/posts/${id}/like`);
     return data;
 };
 
-// create post
 export const createPostRequest = async ({ title, content, categories }) => {
     const { data } = await api.post('/posts', { title, content, categories });
-    return data; // Created Post
+    return data; 
 };
 
-// update post (owner: title/content/categories; admin: categories/status/…)
 export const updatePostRequest = async (id, payload) => {
     const { data } = await api.patch(`/posts/${id}`, payload);
-    return data; // Updated Post
+    return data; 
 };
 
-// delete own post
 export const deletePostRequest = async (id) => {
     const { data } = await api.delete(`/posts/${id}`);
-    return data; // 200 { description: 'Deleted' } або порожньо — не покладаємось
+    return data; 
 };
 
 export const lockPostRequest = async (id) => {

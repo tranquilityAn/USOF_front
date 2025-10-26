@@ -79,7 +79,7 @@ export const createUser = createAsyncThunk(
     async (payload, { rejectWithValue }) => {
         try {
             const created = await createUserRequest(payload);
-            return created || null; // якщо бек нічого не повернув
+            return created || null;
         } catch (err) {
             const msg = err?.response?.data?.message
                 || err?.response?.data?.error
@@ -164,7 +164,7 @@ const profileSlice = createSlice({
             })
             .addCase(createUser.fulfilled, (state, action) => {
                 state.createUserLoading = false;
-                state.createdUser = action.payload; // може бути null, якщо бек не поверне body
+                state.createdUser = action.payload;
             })
             .addCase(createUser.rejected, (state, action) => {
                 state.createUserLoading = false;

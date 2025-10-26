@@ -39,8 +39,8 @@ export default function PostPage() {
 
     const onToggleFav = () => {
         if (requireAuth()) return;
-        if (isFavPending) return; // захист від дабл-кліків/гонок
-        dispatch(toggleFavorite({ postId, isFav })); // всередині вирішує: DELETE чи POST
+        if (isFavPending) return;
+        dispatch(toggleFavorite({ postId, isFav }));
     };
 
     useEffect(() => {

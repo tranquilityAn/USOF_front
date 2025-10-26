@@ -15,7 +15,7 @@ export default function CreatePostPage() {
 
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
-    const [selected, setSelected] = useState([]); // number[]
+    const [selected, setSelected] = useState([]);
 
 
     useEffect(() => { if (!categories?.length) dispatch(fetchCategories()); }, [dispatch, categories?.length]);

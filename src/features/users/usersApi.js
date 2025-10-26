@@ -3,17 +3,17 @@ import { api } from '../../app/api';
 // PATCH /users/{id}
 export const updateUserRequest = async (id, payload) => {
     const { data } = await api.patch(`/users/${id}`, payload);
-    return data; // 200 OK
+    return data;
 };
 
-// PATCH /users/avatar  (multipart)
+// PATCH /users/avatar
 export const uploadAvatarRequest = async (file) => {
     const fd = new FormData();
     fd.append('avatar', file);
     const { data } = await api.patch('/users/avatar', fd, {
         headers: { 'Content-Type': 'multipart/form-data' },
     });
-    return data; // 200 OK
+    return data;
 };
 
 // PATCH /users/avatar  remove=true
@@ -23,19 +23,19 @@ export const removeAvatarRequest = async () => {
     const { data } = await api.patch('/users/avatar', fd, {
         headers: { 'Content-Type': 'multipart/form-data' },
     });
-    return data; // 200 OK
+    return data;
 };
 
 // POST /auth/password-reset
 export const requestPasswordReset = async (email) => {
     const { data } = await api.post('/auth/password-reset', { email });
-    return data; // 200 OK
+    return data;
 };
 
 // DELETE /users/{id}
 export const deleteAccountByIdRequest = async (id) => {
     const { data } = await api.delete(`/users/${id}`);
-    return data; // 200 OK
+    return data;
 };
 
 // POST /users  (admin only)

@@ -4,7 +4,6 @@ import { useSearchParams } from 'react-router-dom';
 export const useQuerySync = (state, onParsed) => {
     const [searchParams, setSearchParams] = useSearchParams();
 
-    // URL -> state (одноразово при монтуванні)
     useEffect(() => {
         const p = Object.fromEntries(searchParams.entries());
         const parsed = {
@@ -21,7 +20,6 @@ export const useQuerySync = (state, onParsed) => {
         // eslint-disable-next-line
     }, []);
 
-    // state -> URL
     useEffect(() => {
         const p = new URLSearchParams();
         if (state.page) p.set('page', String(state.page));

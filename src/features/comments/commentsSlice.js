@@ -185,7 +185,6 @@ export const toggleCommentStatus = createAsyncThunk(
     'comments/toggleStatus',
     async ({ commentId, nextStatus }, { rejectWithValue }) => {
         try {
-            // має повертати { id, ..., status: 'active'|'inactive' }
             const updated = await updateCommentStatusRequest(commentId, nextStatus);
             return updated;
         } catch (err) {
@@ -230,7 +229,7 @@ function patchCommentEverywhereImmutable(state, commentId, patch) {
 export const toggleCommentReaction = createAsyncThunk(
     'comments/toggleReaction',
     async ({ commentId, type }, { getState, rejectWithValue }) => {
-        try {
+        try { // Array<Comment>
             const state = getState();
             const my = state.comments.myReactionByComment?.[commentId] ?? null;
             if (my === type) {

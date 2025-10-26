@@ -59,7 +59,6 @@ export default function CreateUserPage() {
             if (res?.id) navigate(`/profile/${res.id}`);
             else navigate('/');
         } catch {
-            /* error already in store */
         }
     };
 

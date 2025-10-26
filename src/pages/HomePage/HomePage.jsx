@@ -17,8 +17,7 @@ export default function HomePage() {
     const isAdmin = auth?.user?.role === 'admin';
     const isLoggedIn = Boolean(auth?.user);
     const authorsById = useSelector(s => s.authors.byId);
-
-    // Локальна "чернетка" фільтрів для панелі
+    
     const [draft, setDraft] = useState({
         page: 1,
         limit: 10,
@@ -27,19 +26,16 @@ export default function HomePage() {
         categories: [],
         dateFrom: '',
         dateTo: '',
-        status: undefined, // показуємо/ховаємо в UI за роллю
+        status: undefined, 
     });
-
-    // URL -> застосовані фільтри в Redux + синхронізуємо чернетку
+    
     useQuerySync(posts.filters, (parsed) => {
         dispatch(setFilters(parsed));
         setDraft(d => ({ ...d, ...parsed }));
     });
 
-    // початкове завантаження категорій (для чекбоксів)
     useEffect(() => { dispatch(fetchCategories()); }, [dispatch]);
 
-    // Робимо запит лише коли ЗАСТОСОВАНІ фільтри змінюються
     useEffect(() => {
         const f = filters;
         const params = {
@@ -61,24 +57,20 @@ export default function HomePage() {
             posts.items
                 .map(p => p.authorId)
                 .filter(Boolean)
-                .filter(id => !authorsById?.[id])   // ще нема в кеші
+                .filter(id => !authorsById?.[id])
         )];
 
         missing.forEach(id => dispatch(fetchUserById(id)));
     }, [posts.items, authorsById, dispatch]);
 
-    // Зміни в панелі — лише у draft
     const onChangeDraft = (patch) => setDraft(d => ({ ...d, ...patch }));
 
-    // "Застосувати" — переносимо draft у Redux (це запустить useEffect вище)
     const onApply = () => {
-        // коли застосовуєш фільтри — варто скидати на першу сторінку
         const applied = { ...draft, page: 1 };
         setDraft(applied);
         dispatch(setFilters(applied));
     };
 
-    // Контент
     const content = useMemo(() => {
         if (posts.loading) return <div style={{ color: '#aaa' }}>Loading……</div>;
         if (posts.error) return <div style={{ color: '#ff6b6b' }}>{posts.error}</div>;
@@ -93,7 +85,6 @@ export default function HomePage() {
     return (
         <div style={{ display: 'grid', gap: 16 }}>
             <FiltersBar
-                // передаємо ЧЕРНЕТКУ в панель
                 sort={draft.sort}
                 order={draft.order}
                 status={draft.status}
@@ -104,8 +95,7 @@ export default function HomePage() {
                 dateTo={draft.dateTo}
                 onChange={onChangeDraft}
                 onApply={onApply}
-                // керування правами:
-                canFilterStatus={isAdmin /* тут true лише для адміна на загальній сторінці */}
+                canFilterStatus={isAdmin}
                 isLoggedIn={isLoggedIn}
             />
 

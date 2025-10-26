@@ -10,13 +10,7 @@ const countReactions = (arr = []) => {
     return { likes, dislikes };
 };
 
-/**
- * hydratePost(post: object) -> Promise<object>
- * - не робить зайвих запитів: добирає лише те, чого немає у post
- * - підтримує обидва поля ідентифікатора автора: authorId / userId
- */
 export async function hydratePost(p) {
-    // не мутуємо вхідний об’єкт
     const post = { ...p };
 
     // 1) Reactions

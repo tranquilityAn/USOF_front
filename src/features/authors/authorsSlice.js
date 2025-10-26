@@ -25,9 +25,9 @@ export const fetchUserPostsCount = createAsyncThunk(
 const authorsSlice = createSlice({
     name: 'authors',
     initialState: {
-        byId: {},    // { [id]: userObject }
-        loading: {}, // { [id]: boolean }
-        error: {},   // { [id]: string | undefined }
+        byId: {},
+        loading: {},
+        error: {},
     },
     reducers: {},
     extraReducers: (builder) => {
@@ -47,18 +47,14 @@ const authorsSlice = createSlice({
                 s.error[id] = a.payload || 'Failed to load user';
             })
             .addCase(fetchUserPostsCount.pending, (s, a) => {
-                //const id = a.meta.arg;
-                // optional: s.loadingPostsCount[id] = true;
+
             })
             .addCase(fetchUserPostsCount.fulfilled, (s, a) => {
                 const { id, count } = a.payload;
                 s.byId[id] = { ...(s.byId[id] || {}), postsCount: count };
-                // optional: s.loadingPostsCount[id] = false;
             })
             .addCase(fetchUserPostsCount.rejected, (s, a) => {
-                //const id = a.meta.arg;
-                // optional: s.loadingPostsCount[id] = false;
-                // optional: s.errorPostsCount[id] = a.payload || 'Failed to load posts count';
+
             });
     }
 });

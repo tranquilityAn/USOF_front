@@ -6,8 +6,7 @@ import styles from './ConfirmEmailPage.module.css';
 export default function ConfirmEmailPage() {
     const [sp] = useSearchParams();
     const navigate = useNavigate();
-
-    // from URL params on first render
+   
     const initial = useMemo(
         () => ({
             login: sp.get('login') || '',
@@ -15,15 +14,12 @@ export default function ConfirmEmailPage() {
         }),
         [sp]
     );
-
-    // shown email (updates after "change email")
+    
     const [targetEmail, setTargetEmail] = useState(initial.email);
-
-    // config from backend
+    
     const [ttl, setTtl] = useState(60);
     const [cooldown, setCooldown] = useState(60);
-
-    // UI/state
+    
     const [left, setLeft] = useState(0);
     const [mode, setMode] = useState('default');
     const [newEmail, setNewEmail] = useState(initial.email);

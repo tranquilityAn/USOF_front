@@ -23,7 +23,6 @@ export default function VerifyEmailPage() {
 
         (async () => {
             try {
-                // Treat 2xx as success; also accept 409 as “already verified”
                 const res = await api.get(`/auth/verify-email/${token}`, {
                     validateStatus: (s) => (s >= 200 && s < 300) || s === 409,
                 });

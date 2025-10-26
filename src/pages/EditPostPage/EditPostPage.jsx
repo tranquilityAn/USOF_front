@@ -18,10 +18,9 @@ export default function EditPostPage() {
 
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
-    const [selected, setSelected] = useState([]); // number[]
-    const [status, setStatus] = useState('active'); // 'active' | 'inactive'
+    const [selected, setSelected] = useState([]);
+    const [status, setStatus] = useState('active');
 
-    // preload
     useEffect(() => {
         if (!categories?.length) dispatch(fetchCategories());
     }, [categories?.length, dispatch]);
@@ -37,7 +36,7 @@ export default function EditPostPage() {
         setContent(post.content ?? '');
         const catIds = (post.categories || []).map(c => c.id);
         setSelected(catIds);
-        if (post.status) setStatus(post.status); // наповнюємо статус
+        if (post.status) setStatus(post.status);
     }, [post, postId]);
 
     useEffect(() => {

@@ -11,7 +11,6 @@ export default function UsersPage() {
     const [users, setUsers] = useState([]);
     const [query, setQuery] = useState('');
 
-    // client-side pagination
     const [page, setPage] = useState(1);
     const limit = 10;
 
@@ -19,7 +18,7 @@ export default function UsersPage() {
         (async () => {
             try {
                 setLoading(true);
-                const data = await getUsersRequest(); // admin-only
+                const data = await getUsersRequest();
                 setUsers(Array.isArray(data) ? data : []);
             } catch (e) {
                 setError(e?.response?.data?.error || 'Failed to load users');

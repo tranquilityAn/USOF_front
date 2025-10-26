@@ -2,12 +2,6 @@ import { Link } from 'react-router-dom';
 import styles from './CategoryChips.module.css';
 import { useSelector } from 'react-redux';
 
-/**
- * Показує список категорій як теги.
- * Підтримує:
- *  - categories: [{id, title}]
- *  - categoryIds: number[]           // запасний варіант, коли приходять лише id
- */
 export default function CategoryChips({ categories, categoryIds, size = 'md' }) {
     const allCats = useSelector(s => s.categories.items);
 

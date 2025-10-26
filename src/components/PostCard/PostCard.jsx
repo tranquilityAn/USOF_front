@@ -6,10 +6,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toggleFavorite, selectIsFavorite, selectFavPending } from '../../features/favorites/favoritesSlice';
 import { formatDateISO } from '../../utils/formatDate';
 
-/**
- * Post card for the list on the homepage.
- * Makes the title clickable: leads to /post/:id
- */
 export default function PostCard({ post }) {
     const navigate = useNavigate();
     const dispatch = useDispatch();
