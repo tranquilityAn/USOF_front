@@ -4,6 +4,7 @@ import { AiTwotoneLike, AiTwotoneDislike, AiOutlineComment } from 'react-icons/a
 import { AiOutlineHeart, AiFillHeart } from 'react-icons/ai';
 import { useDispatch, useSelector } from 'react-redux';
 import { toggleFavorite, selectIsFavorite, selectFavPending } from '../../features/favorites/favoritesSlice';
+import { formatDateISO } from '../../utils/formatDate';
 
 /**
  * Post card for the list on the homepage.
@@ -97,7 +98,7 @@ export default function PostCard({ post }) {
                 >
                     @{author?.login || 'anon'}
                 </Link>{' '}
-                • {date.toLocaleString()}
+                • {formatDateISO(date)}
             </div>
 
             {coverUrl && (

@@ -8,6 +8,7 @@ import {
     deleteAccountByIdRequest
 } from '../../../features/users/usersApi';
 import styles from './UserDetailsPage.module.css';
+import { formatDateISO } from '../../../utils/formatDate';
 
 export default function UserDetailsPage() {
     const { id } = useParams();
@@ -89,8 +90,8 @@ export default function UserDetailsPage() {
                         <div className={styles.metaRow}><span>Full name:</span><strong>{user.fullName || '—'}</strong></div>
                         <div className={styles.metaRow}><span>Rating:</span><strong>{user.rating ?? 0}</strong></div>
                         <div className={styles.metaRow}><span>Email verified:</span><strong>{user.emailVerified ? 'Yes' : 'No'}</strong></div>
-                        <div className={styles.metaRow}><span>Created:</span><strong>{new Date(user.createdAt).toLocaleString()}</strong></div>
-                        <div className={styles.metaRow}><span>Updated:</span><strong>{new Date(user.updatedAt).toLocaleString()}</strong></div>
+                        <div className={styles.metaRow}><span>Created:</span><strong>{formatDateISO(new Date(user.createdAt))}</strong></div>
+                        <div className={styles.metaRow}><span>Updated:</span><strong>{formatDateISO(new Date(user.updatedAt))}</strong></div>
                     </div>
                 </div>
 
