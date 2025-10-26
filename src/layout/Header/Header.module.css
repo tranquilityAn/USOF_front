@@ -205,7 +205,7 @@
         margin: 0 8px;
     }
 
-    .userHandle {
+    .userRole {
         display: none;
     }
 
@@ -221,5 +221,11 @@
     .dropdownToggle {
         gap: 8px;
         padding: 0 10px;
+    }
+}
+
+@media (max-width: 600px) {
+    .search {
+        display: none;
     }
 }
