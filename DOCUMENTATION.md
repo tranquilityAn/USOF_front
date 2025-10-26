@@ -1,16 +1,16 @@
 # Full-Fledged Documentation - USOF Frontend
 
-## ⚡ Description
+## Description
 
 **USOF** is a full-featured web application that provides an interface for interacting with a RESTful API from the **USOF Backend** challenge.  
 The frontend is developed with **React** and **Redux**, following modern development standards, and delivers an intuitive, responsive user interface for managing posts, comments, categories, users, and authentication.
 
-### 🎯 Goal
+### Goal
 Create a complete user interface for the provided API, implementing all required functionalities - registration, authentication, post creation, editing, commenting, liking, and user management - while maintaining performance, usability, and attractive design.
 
 ---
 
-## 🧩 Tech Stack and Dependencies
+## Tech Stack and Dependencies
 
 **Core Technologies:**
 - React 18+
@@ -73,7 +73,7 @@ frontend/
 - List of user’s posts with pagination.
 - Ability to edit personal information and avatar.
 
-### 5. Admin Access (if role = admin)
+### 5. Admin Access
 - Access to admin panel pages (categories, users, etc.).
 - Hidden from non-admin users.
 

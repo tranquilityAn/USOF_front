@@ -21,7 +21,6 @@ export default function Header() {
 
     const isAuth = !!token;
 
-    // Header without search/user block on login and register pages
     const isAuthPage = ['/login', '/register'].includes(location.pathname);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
@@ -90,9 +89,19 @@ export default function Header() {
                                                 size={40}                     // або залиш ширину через CSS-клас
                                                 className={styles.avatar}
                                             />
-                                            <span className={styles.userHandle}>
+                                            {/* <span className={styles.userHandle}>
                                                 {user?.login ? `@${user.login}` : '@user'}
-                                            </span>
+                                            </span> */}
+                                            <div className={styles.userInfo}>
+                                                <span className={styles.userHandle}>
+                                                    {user?.login ? `@${user.login}` : '@user'}
+                                                </span>
+                                                {user?.role && (
+                                                    <span className={styles.userRole}>
+                                                        {user.role === 'admin' ? 'admin' : 'user'}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </button>
 
                                         {isDropdownOpen && (
